@@ -2,6 +2,7 @@
 
 namespace System.Data.Entity.Query.LinqToEntities
 {
+    using System.Collections.Generic;
     using System.Data.Entity.Core.Objects;
     using System.Data.Entity.Infrastructure;
     using System.Linq;
@@ -271,6 +272,25 @@ namespace System.Data.Entity.Query.LinqToEntities
                 Assert.False(firstOrDefault != null && firstOrDefault.CategoryIsNull);
             }
         }
+
+        [Fact] // CodePlex 1973
+        public void Projection_to_list_produces_items_in_correct_order()
+        {
+            using (var context = new SimpleModelContext())
+            {
+                context.Database.Initialize(false);
+
+                var query = context.Products
+                    .Select(p => new List<string> { p.Id.ToString(), p.Name, p.CategoryId })
+                    .ToList();
+
+                var baseline = context.Products.ToList()
+                    .Select(p => new List<string> { p.Id.ToString(), p.Name, p.CategoryId });
+
+                Assert.Equal(baseline, query);
+            }
+        }
+
 
         public class MeIzNamed
         {
