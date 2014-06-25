@@ -6627,5 +6627,106 @@ namespace FunctionalTests
                     .HasAnnotation("Fox", "No one knows...");
             }
         }
+
+        public class CodePlex2084 : TestBase
+        {
+            public class Foo
+            {
+                public int Id { get; set; }
+
+                public virtual ICollection<Foo_Foo> Foo_Foo { get; set; }
+            }
+
+            public class Foo_Foo
+            {
+                public int Id{ get; set; }
+                public virtual Foo Foo { get; set; }
+            }
+
+            public class EntityMappingFooCombined : EntityTypeConfiguration<Foo>
+            {
+                public EntityMappingFooCombined()
+                {
+                    HasMany(e => e.Foo_Foo)
+                        .WithRequired(e => e.Foo);
+
+                }
+            }
+
+            public class EntityMappingFoo : EntityTypeConfiguration<Foo>
+            {
+                public EntityMappingFoo()
+                {
+                    HasMany(e => e.Foo_Foo);
+                }
+            }
+
+            public class EntityMappingFooFoo : EntityTypeConfiguration<Foo_Foo>
+            {
+                public EntityMappingFooFoo()
+                {
+                    HasRequired(e => e.Foo);
+                }
+            }
+
+
+
+            [Fact]
+            public void Mapping_names_singly_Foo_should_not_cause_duplicate_metadata_error()
+            {
+                Assert.DoesNotThrow(() =>
+                {
+                    var modelBuilder = new DbModelBuilder();
+                    modelBuilder.Configurations.Add(new EntityMappingFoo());
+
+                    var databaseMapping = BuildMapping(modelBuilder);
+
+                    databaseMapping.AssertValid();
+                });
+            }
+
+            [Fact]
+            public void Mapping_names_singly_FooFoo_combined_should_not_cause_duplicate_metadata_error()
+            {
+                Assert.DoesNotThrow(() =>
+                {
+                    var modelBuilder = new DbModelBuilder();
+                    modelBuilder.Configurations.Add(new EntityMappingFooFoo());
+
+                    var databaseMapping = BuildMapping(modelBuilder);
+
+                    databaseMapping.AssertValid();
+                });
+            }
+
+            [Fact]
+            public void Mapping_names_reflexively_combined_should_not_cause_duplicate_metadata_error()
+            {
+                Assert.DoesNotThrow(() => {
+                    var modelBuilder = new DbModelBuilder();
+                    modelBuilder.Configurations.Add(new EntityMappingFooCombined());
+
+                    var databaseMapping = BuildMapping(modelBuilder);
+
+                    databaseMapping.AssertValid();
+                });
+            }
+
+            [Fact]
+            public void Mapping_names_reflexively_separately_should_not_cause_duplicate_metadata_error()
+            {
+                Assert.DoesNotThrow(() =>
+                {
+                    var modelBuilder = new DbModelBuilder();
+                    modelBuilder.Configurations.Add(new EntityMappingFoo());
+                    modelBuilder.Configurations.Add(new EntityMappingFooFoo());
+
+                    var databaseMapping = BuildMapping(modelBuilder);
+
+                    databaseMapping.AssertValid();
+                });
+            }
+
+        }
     }
 }
