@@ -24,7 +24,7 @@ namespace System.Data.Entity.Core.Objects.DataClasses
     /// </summary>
     /// <typeparam name="TEntity">The type of entities in this collection.</typeparam>
     [Serializable]
-    public class EntityCollection<TEntity> : RelatedEnd, ICollection<TEntity>, IListSource
+    public class EntityCollection<TEntity> : RelatedEnd, ICollection<TEntity>, IQueryable<TEntity>, IListSource
         where TEntity : class
     {
         // ------
@@ -973,6 +973,16 @@ namespace System.Data.Entity.Core.Objects.DataClasses
                 WrappedOwner.CollectionAdd(this, wrappedEntity.Entity);
             }
         }
+
+        #endregion
+
+        #region IQueryable
+
+        public Type ElementType { get { return ((IQueryable) (new EnumerableQuery<TEntity>(this))).ElementType; } }
+
+        public System.Linq.Expressions.Expression Expression { get { return ((IQueryable)(new EnumerableQuery<TEntity>(this))).Expression; } }
+
+        public IQueryProvider Provider { get { return ((IQueryable)(new EnumerableQuery<TEntity>(this))).Provider; } }
 
         #endregion
     }
