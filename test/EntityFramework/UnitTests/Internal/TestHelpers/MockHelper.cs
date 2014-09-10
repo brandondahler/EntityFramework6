@@ -16,17 +16,17 @@ namespace System.Data.Entity.Internal
     {
         internal static InternalSqlSetQuery CreateInternalSqlSetQuery(string sql, bool isNoTracking = false,  params object[] parameters)
         {
-            return new InternalSqlSetQuery(new Mock<InternalSetForMock<FakeEntity>>().Object, sql, isNoTracking, parameters);
+            return new InternalSqlSetQuery(new Mock<InternalSetForMock<FakeEntity>>().Object, SqlQueryMappingBehavior.MemberNameOnly, sql, isNoTracking, parameters);
         }
 
         internal static InternalSqlNonSetQuery CreateInternalSqlNonSetQuery(string sql, params object[] parameters)
         {
-            return new InternalSqlNonSetQuery(new Mock<InternalContextForMock>().Object, typeof(object), sql, parameters);
+            return new InternalSqlNonSetQuery(new Mock<InternalContextForMock>().Object, typeof(object), SqlQueryMappingBehavior.MemberNameOnly, sql, parameters);
         }
 
         internal static Mock<InternalSqlNonSetQuery> CreateMockInternalSqlNonSetQuery(string sql, params object[] parameters)
         {
-            return new Mock<InternalSqlNonSetQuery>(new Mock<InternalContextForMock>().Object, typeof(object), sql, parameters);
+            return new Mock<InternalSqlNonSetQuery>(new Mock<InternalContextForMock>().Object, typeof(object), SqlQueryMappingBehavior.MemberNameOnly, sql, parameters);
         }
 
         internal static Mock<IEntityStateEntry> CreateMockStateEntry<TEntity>() where TEntity : class, new()

@@ -245,6 +245,7 @@
     <Compile Include="ProductivityApi\DbContextTests.cs" />
     <Compile Include="ProductivityApi\DbFunctionScenarios.cs" />
     <Compile Include="ProductivityApi\DeadlockTests.cs" />
+    <Compile Include="ProductivityApi\ObjectContextTests.cs" />
     <Compile Include="ProductivityApi\SimpleScenariosForSqlCe35.cs" />
     <Compile Include="ProductivityApi\TemplateTests.cs" />
     <Compile Include="Query\Bug2612.cs" />
@@ -388,6 +389,10 @@
     <Compile Include="TestModels\SimpleMigrationsModel\Blog.cs" />
     <Compile Include="TestModels\SimpleMigrationsModel\MigrateInitializerConfiguration.cs" />
     <Compile Include="TestModels\SimpleMigrationsModel\MigrateInitializerContext.cs" />
+    <Compile Include="TestModels\SqlQueryMappedModel\MappedEntity.cs" />
+    <Compile Include="TestModels\SqlQueryMappedModel\SqlQueryMappedContext.cs" />
+    <Compile Include="TestModels\SqlQueryMappedModel\SqlQueryMappedInitializer.cs" />
+    <Compile Include="TestModels\SqlQueryMappedModel\SqlQueryMappedSeeder.cs" />
     <Compile Include="TestModels\TemplateModels\CsAdvancedPatterns\AddressMf.cs">
       <DependentUpon>CsAdvancedPatterns.tt</DependentUpon>
     </Compile>

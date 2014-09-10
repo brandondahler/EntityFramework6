@@ -3502,7 +3502,7 @@ namespace System.Data.Entity.Core.Objects
             var columnMapFactoryMock = new Mock<ColumnMapFactory>();
             columnMapFactoryMock.Setup(
                 m => m.CreateColumnMapFromReaderAndType(
-                    It.IsAny<DbDataReader>(), It.IsAny<EdmType>(), It.IsAny<EntitySet>(),
+                    It.IsAny<DbDataReader>(), It.IsAny<SqlQueryMappingBehavior>(), It.IsAny<EdmType>(), It.IsAny<EntitySet>(),
                     It.IsAny<Dictionary<string, FunctionImportReturnTypeStructuralTypeColumnRenameMapping>>()))
                                 .Returns(collectionColumnMap);
 

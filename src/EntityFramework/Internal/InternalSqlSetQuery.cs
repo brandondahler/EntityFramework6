@@ -22,15 +22,16 @@ namespace System.Data.Entity.Internal
         // Initializes a new instance of the <see cref="InternalSqlSetQuery" /> class.
         // </summary>
         // <param name="set"> The set. </param>
+        // <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
         // <param name="sql"> The SQL. </param>
         // <param name="isNoTracking">
         // If set to <c>true</c> then the entities will not be tracked.
         // </param>
         // <param name="parameters"> The parameters. </param>
-        internal InternalSqlSetQuery(IInternalSet set, string sql, bool isNoTracking, object[] parameters) : this(set, sql, isNoTracking, /*streaming:*/ null, parameters) {}
+        internal InternalSqlSetQuery(IInternalSet set, SqlQueryMappingBehavior sqlQueryMappingBehavior, string sql, bool isNoTracking, object[] parameters) : this(set, sqlQueryMappingBehavior, sql, isNoTracking, /*streaming:*/ null, parameters) { }
 
-        private InternalSqlSetQuery(IInternalSet set, string sql, bool isNoTracking, bool? streaming, object[] parameters)
-            : base(sql, streaming, parameters)
+        private InternalSqlSetQuery(IInternalSet set, SqlQueryMappingBehavior sqlQueryMappingBehavior, string sql, bool isNoTracking, bool? streaming, object[] parameters)
+            : base(sqlQueryMappingBehavior, sql, streaming, parameters)
         {
             DebugCheck.NotNull(set);
 
@@ -47,7 +48,7 @@ namespace System.Data.Entity.Internal
         {
             return _isNoTracking
                        ? this
-                       : new InternalSqlSetQuery(_set, Sql, isNoTracking: true, streaming: Streaming, parameters: Parameters);
+                       : new InternalSqlSetQuery(_set, SqlQueryMappingBehavior, Sql, isNoTracking: true, streaming: Streaming, parameters: Parameters);
         }
 
         // <summary>
@@ -72,7 +73,7 @@ namespace System.Data.Entity.Internal
         {
             return Streaming.HasValue && Streaming.Value
                        ? this
-                       : new InternalSqlSetQuery(_set, Sql, isNoTracking: _isNoTracking, streaming: true, parameters: Parameters);
+                       : new InternalSqlSetQuery(_set, SqlQueryMappingBehavior, Sql, isNoTracking: _isNoTracking, streaming: true, parameters: Parameters);
         }
 
         #endregion
@@ -86,7 +87,7 @@ namespace System.Data.Entity.Internal
         // <returns> The query results. </returns>
         public override IEnumerator GetEnumerator()
         {
-            return _set.ExecuteSqlQuery(Sql, _isNoTracking, Streaming, Parameters);
+            return _set.ExecuteSqlQuery(SqlQueryMappingBehavior, Sql, _isNoTracking, Streaming, Parameters);
         }
 
         #endregion
@@ -102,7 +103,7 @@ namespace System.Data.Entity.Internal
         // <returns> The query results. </returns>
         public override IDbAsyncEnumerator GetAsyncEnumerator()
         {
-            return _set.ExecuteSqlQueryAsync(Sql, _isNoTracking, Streaming, Parameters);
+            return _set.ExecuteSqlQueryAsync(SqlQueryMappingBehavior, Sql, _isNoTracking, Streaming, Parameters);
         }
 
 #endif

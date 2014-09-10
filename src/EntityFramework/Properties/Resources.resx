@@ -5574,4 +5574,8 @@
     <value>The store type '{0}' could not be found in the {1} provider manifest</value>
     <comment>## ExceptionType=InvalidOperationException</comment>
   </data>
+  <data name="ADP_InvalidSqlQueryMappingBehavior" xml:space="preserve">
+    <value>Invalid SqlQueryMappingBehavior provided.</value>
+    <comment>## ExceptionType=NotImplementedException</comment>
+  </data>
 </root>

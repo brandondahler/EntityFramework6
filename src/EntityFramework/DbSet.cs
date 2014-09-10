@@ -367,13 +367,42 @@ namespace System.Data.Entity
         /// </returns>
         public virtual DbSqlQuery SqlQuery(string sql, params object[] parameters)
         {
+            return SqlQuery(SqlQueryMappingBehavior.MemberNameOnly, sql, parameters);
+        }
+
+        /// <summary>
+        /// Creates a raw SQL query that will return entities in this set.  By default, the
+        /// entities returned are tracked by the context; this can be changed by calling
+        /// AsNoTracking on the <see cref="DbRawSqlQuery" /> returned.
+        /// Note that the entities returned are always of the type for this set and never of
+        /// a derived type.  If the table or tables queried may contain data for other entity
+        /// types, then the SQL query must be written appropriately to ensure that only entities of
+        /// the correct type are returned.
+        ///
+        /// As with any API that accepts SQL it is important to parameterize any user input to protect against a SQL injection attack. You can include parameter place holders in the SQL query string and then supply parameter values as additional arguments. Any parameter values you supply will automatically be converted to a DbParameter.
+        /// context.Set(typeof(Blog)).SqlQuery("SELECT * FROM dbo.Posts WHERE Author = @p0", userSuppliedAuthor);
+        /// Alternatively, you can also construct a DbParameter and supply it to SqlQuery. This allows you to use named parameters in the SQL query string.
+        /// context.Set(typeof(Blog)).SqlQuery("SELECT * FROM dbo.Posts WHERE Author = @author", new SqlParameter("@author", userSuppliedAuthor));
+        /// </summary>
+        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="sql"> The SQL query string. </param>
+        /// <param name="parameters"> 
+        /// The parameters to apply to the SQL query string. If output parameters are used, their values 
+        /// will not be available until the results have been read completely. This is due to the underlying 
+        /// behavior of DbDataReader, see http://go.microsoft.com/fwlink/?LinkID=398589 for more details.
+        /// </param>
+        /// <returns>
+        /// A <see cref="DbSqlQuery" /> object that will execute the query when it is enumerated.
+        /// </returns>
+        public virtual DbSqlQuery SqlQuery(SqlQueryMappingBehavior sqlQueryMappingBehavior, string sql, params object[] parameters)
+        {
             Check.NotEmpty(sql, "sql");
             Check.NotNull(parameters, "parameters");
 
             return new DbSqlQuery(
                 InternalSet == null
                     ? null
-                    : new InternalSqlSetQuery(InternalSet, sql, /*isNoTracking:*/ false, parameters));
+                    : new InternalSqlSetQuery(InternalSet, sqlQueryMappingBehavior, sql, /*isNoTracking:*/ false, parameters));
         }
 
         #endregion

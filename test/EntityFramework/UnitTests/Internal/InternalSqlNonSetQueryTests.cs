@@ -43,25 +43,25 @@ namespace System.Data.Entity.Internal
 
 #if !NET40
             VerifyMethod<string>(
-                e => e.GetAsyncEnumerator(), m => m.ExecuteSqlQueryAsync(typeof(string), "foo", streaming ? true : (bool?)null, parameters),
-                "foo", streaming, parameters);
+                e => e.GetAsyncEnumerator(), m => m.ExecuteSqlQueryAsync(typeof(string), SqlQueryMappingBehavior.MemberNameOnly, "foo", streaming ? true : (bool?)null, parameters),
+                SqlQueryMappingBehavior.MemberNameOnly, "foo", streaming, parameters);
 #endif
 
             VerifyMethod<string>(
-                e => e.GetEnumerator(), m => m.ExecuteSqlQuery(typeof(string), "foo", streaming ? true : (bool?)null, parameters),
-                "foo", streaming, parameters);
+                e => e.GetEnumerator(), m => m.ExecuteSqlQuery(typeof(string), SqlQueryMappingBehavior.MemberNameOnly, "foo", streaming ? true : (bool?)null, parameters),
+                SqlQueryMappingBehavior.MemberNameOnly, "foo", streaming, parameters);
         }
 
         internal void VerifyMethod<T>(
             Action<InternalSqlNonSetQuery> methodInvoke, Expression<Action<InternalContextForMock>> mockMethodInvoke,
-            string sql, bool streaming, object[] parameters)
+            SqlQueryMappingBehavior sqlQueryMappingBehavior, string sql, bool streaming, object[] parameters)
             where T : class
         {
             Assert.NotNull(methodInvoke);
             Assert.NotNull(mockMethodInvoke);
 
             var internalContextMock = new Mock<InternalContextForMock>();
-            var sqlSetQuery = new InternalSqlNonSetQuery(internalContextMock.Object, typeof(T), sql, parameters);
+            var sqlSetQuery = new InternalSqlNonSetQuery(internalContextMock.Object, typeof(T), sqlQueryMappingBehavior, sql, parameters);
             if (streaming)
             {
                 sqlSetQuery = (InternalSqlNonSetQuery)sqlSetQuery.AsStreaming();

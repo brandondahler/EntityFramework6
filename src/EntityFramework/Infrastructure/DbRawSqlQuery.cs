@@ -18,7 +18,8 @@ namespace System.Data.Entity.Infrastructure
     /// Instances of this class are obtained from the <see cref="DbContext.Database" /> instance.
     /// The query is not executed when this object is created; it is executed
     /// each time it is enumerated, for example by using foreach.
-    /// SQL queries for entities are created using <see cref="DbSet.SqlQuery" />.
+    /// SQL queries for entities are created using <see cref="DbSet.SqlQuery(string, object[])" /> 
+    /// or <see cref="DbSet.SqlQuery(SqlQueryMappingBehavior, string, object[])" />.
     /// See <see cref="DbRawSqlQuery{TElement}" /> for a generic version of this class.
     /// </summary>
     [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]

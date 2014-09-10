@@ -67,15 +67,15 @@ namespace System.Data.Entity.Internal
             = typeof(InternalContext).GetOnlyDeclaredMethod("ExecuteSqlQueryAsIDbAsyncEnumerator");
 #endif
 
-        private static readonly ConcurrentDictionary<Type, Func<InternalContext, string, bool?, object[], IEnumerator>>
+        private static readonly ConcurrentDictionary<Type, Func<InternalContext, SqlQueryMappingBehavior, string, bool?, object[], IEnumerator>>
             _queryExecutors =
-                new ConcurrentDictionary<Type, Func<InternalContext, string, bool?, object[], IEnumerator>>();
+                new ConcurrentDictionary<Type, Func<InternalContext, SqlQueryMappingBehavior, string, bool?, object[], IEnumerator>>();
 
 #if !NET40
 
-        private static readonly ConcurrentDictionary<Type, Func<InternalContext, string, bool?, object[], IDbAsyncEnumerator>>
+        private static readonly ConcurrentDictionary<Type, Func<InternalContext, SqlQueryMappingBehavior, string, bool?, object[], IDbAsyncEnumerator>>
             _asyncQueryExecutors =
-                new ConcurrentDictionary<Type, Func<InternalContext, string, bool?, object[], IDbAsyncEnumerator>>();
+                new ConcurrentDictionary<Type, Func<InternalContext, SqlQueryMappingBehavior, string, bool?, object[], IDbAsyncEnumerator>>();
 
 #endif
 
@@ -858,11 +858,13 @@ namespace System.Data.Entity.Internal
         // database backing this context. The results are not materialized as entities or tracked.
         // </summary>
         // <typeparam name="TElement"> The type of the element. </typeparam>
+        // <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
         // <param name="sql"> The SQL. </param>
         // <param name="streaming"> Whether the query is streaming or buffering. </param>
         // <param name="parameters"> The parameters. </param>
         // <returns> The query results. </returns>
-        public virtual IEnumerator<TElement> ExecuteSqlQuery<TElement>(string sql, bool? streaming, object[] parameters)
+        public virtual IEnumerator<TElement> ExecuteSqlQuery<TElement>(
+            SqlQueryMappingBehavior sqlQueryMappingBehavior, string sql, bool? streaming, object[] parameters)
         {
             DebugCheck.NotNull(sql);
             DebugCheck.NotNull(parameters);
@@ -875,22 +877,23 @@ namespace System.Data.Entity.Internal
                         Initialize();
 
                         return ObjectContext.ExecuteStoreQuery<TElement>(
-                            sql, new ExecutionOptions(MergeOption.AppendOnly, streaming), parameters);
+                            sqlQueryMappingBehavior, sql, new ExecutionOptions(MergeOption.AppendOnly, streaming), parameters);
                     });
         }
 
 #if !NET40
-
+        
         // <summary>
         // Returns an <see cref="IDbAsyncEnumerator{TElement}" /> which when enumerated will execute the given SQL query against the
         // database backing this context. The results are not materialized as entities or tracked.
         // </summary>
         // <typeparam name="TElement"> The type of the element. </typeparam>
+        // <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
         // <param name="sql"> The SQL. </param>
         // <param name="streaming"> Whether the query is streaming or buffering. </param>
         // <param name="parameters"> The parameters. </param>
         // <returns> Task containing the query results. </returns>
-        public virtual IDbAsyncEnumerator<TElement> ExecuteSqlQueryAsync<TElement>(string sql, bool? streaming, object[] parameters)
+        public virtual IDbAsyncEnumerator<TElement> ExecuteSqlQueryAsync<TElement>(SqlQueryMappingBehavior sqlQueryMappingBehavior, string sql, bool? streaming, object[] parameters)
         {
             DebugCheck.NotNull(sql);
             DebugCheck.NotNull(parameters);
@@ -904,7 +907,7 @@ namespace System.Data.Entity.Internal
                     Initialize();
 
                     return ObjectContext.ExecuteStoreQueryAsync<TElement>(
-                        sql, new ExecutionOptions(MergeOption.AppendOnly, streaming), cancellationToken, parameters);
+                        sqlQueryMappingBehavior, sql, new ExecutionOptions(MergeOption.AppendOnly, streaming), cancellationToken, parameters);
                 });
         }
 
@@ -915,35 +918,36 @@ namespace System.Data.Entity.Internal
         // database backing this context. The results are not materialized as entities or tracked.
         // </summary>
         // <param name="elementType"> Type of the element. </param>
+        // <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
         // <param name="sql"> The SQL. </param>
         // <param name="streaming"> Whether the query is streaming or buffering. </param>
         // <param name="parameters"> The parameters. </param>
         // <returns> The query results. </returns>
-        public virtual IEnumerator ExecuteSqlQuery(Type elementType, string sql, bool? streaming, object[] parameters)
+        public virtual IEnumerator ExecuteSqlQuery(Type elementType, SqlQueryMappingBehavior sqlQueryMappingBehavior, string sql, bool? streaming, object[] parameters)
         {
             // There is no non-generic ExecuteStoreQuery method on ObjectContext so we are
             // forced to use MakeGenericMethod.  We compile this into a delegate so that we
             // only take the hit once.
-            Func<InternalContext, string, bool?, object[], IEnumerator> executor;
+            Func<InternalContext, SqlQueryMappingBehavior, string, bool?, object[], IEnumerator> executor;
             if (!_queryExecutors.TryGetValue(elementType, out executor))
             {
                 var genericExecuteMethod = ExecuteSqlQueryAsIEnumeratorMethod.MakeGenericMethod(elementType);
                 executor =
-                    (Func<InternalContext, string, bool?, object[], IEnumerator>)
+                    (Func<InternalContext, SqlQueryMappingBehavior, string, bool?, object[], IEnumerator>)
                     Delegate.CreateDelegate(
-                        typeof(Func<InternalContext, string, bool?, object[], IEnumerator>), genericExecuteMethod);
+                        typeof(Func<InternalContext, SqlQueryMappingBehavior, string, bool?, object[], IEnumerator>), genericExecuteMethod);
                 _queryExecutors.TryAdd(elementType, executor);
             }
-            return executor(this, sql, streaming, parameters);
+            return executor(this, sqlQueryMappingBehavior, sql, streaming, parameters);
         }
 
         // <summary>
         // Calls the generic ExecuteSqlQuery but with a non-generic return type so that it
         // has the correct signature to be used with CreateDelegate above.
         // </summary>
-        private IEnumerator ExecuteSqlQueryAsIEnumerator<TElement>(string sql, bool? streaming, object[] parameters)
+        private IEnumerator ExecuteSqlQueryAsIEnumerator<TElement>(SqlQueryMappingBehavior sqlQueryMappingBehavior, string sql, bool? streaming, object[] parameters)
         {
-            return ExecuteSqlQuery<TElement>(sql, streaming, parameters);
+            return ExecuteSqlQuery<TElement>(sqlQueryMappingBehavior, sql, streaming, parameters);
         }
 
 #if !NET40
@@ -953,35 +957,37 @@ namespace System.Data.Entity.Internal
         // database backing this context. The results are not materialized as entities or tracked.
         // </summary>
         // <param name="elementType"> Type of the element. </param>
+        // <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
         // <param name="sql"> The SQL. </param>
         // <param name="streaming"> Whether the query is streaming or buffering. </param>
         // <param name="parameters"> The parameters. </param>
         // <returns> The query results. </returns>
-        public virtual IDbAsyncEnumerator ExecuteSqlQueryAsync(Type elementType, string sql, bool? streaming, object[] parameters)
+        public virtual IDbAsyncEnumerator ExecuteSqlQueryAsync(Type elementType, SqlQueryMappingBehavior sqlQueryMappingBehavior, string sql, bool? streaming, object[] parameters)
         {
             // There is no non-generic ExecuteStoreQuery method on ObjectContext so we are
             // forced to use MakeGenericMethod.  We compile this into a delegate so that we
             // only take the hit once.
-            Func<InternalContext, string, bool?, object[], IDbAsyncEnumerator> executor;
+            Func<InternalContext, SqlQueryMappingBehavior, string, bool?, object[], IDbAsyncEnumerator> executor;
             if (!_asyncQueryExecutors.TryGetValue(elementType, out executor))
             {
                 var genericExecuteMethod = ExecuteSqlQueryAsIDbAsyncEnumeratorMethod.MakeGenericMethod(elementType);
                 executor =
-                    (Func<InternalContext, string, bool?, object[], IDbAsyncEnumerator>)
+                    (Func<InternalContext, SqlQueryMappingBehavior, string, bool?, object[], IDbAsyncEnumerator>)
                     Delegate.CreateDelegate(
-                        typeof(Func<InternalContext, string, bool?, object[], IDbAsyncEnumerator>), genericExecuteMethod);
+                        typeof(Func<InternalContext, SqlQueryMappingBehavior, string, bool?, object[], IDbAsyncEnumerator>), genericExecuteMethod);
                 _asyncQueryExecutors.TryAdd(elementType, executor);
             }
-            return executor(this, sql, streaming, parameters);
+            return executor(this, sqlQueryMappingBehavior, sql, streaming, parameters);
         }
 
         // <summary>
         // Calls the generic ExecuteSqlQueryAsync but with an object return type so that it
         // has the correct signature to be used with CreateDelegate above.
         // </summary>
-        private IDbAsyncEnumerator ExecuteSqlQueryAsIDbAsyncEnumerator<TElement>(string sql, bool? streaming, object[] parameters)
+        private IDbAsyncEnumerator ExecuteSqlQueryAsIDbAsyncEnumerator<TElement>(
+            SqlQueryMappingBehavior sqlQueryMappingBehavior, string sql, bool? streaming, object[] parameters)
         {
-            return ExecuteSqlQueryAsync<TElement>(sql, streaming, parameters);
+            return ExecuteSqlQueryAsync<TElement>(sqlQueryMappingBehavior, sql, streaming, parameters);
         }
 
 #endif

@@ -14029,6 +14029,14 @@ namespace System.Data.Entity.Resources
         {
             return EntityRes.GetString(EntityRes.StoreTypeNotFound, p0, p1);
         }
+
+        // <summary>
+        // A string like "Invalid SqlQueryMappingBehavior provided."
+        // </summary>
+        internal static string ADP_InvalidSqlQueryMappingBehavior
+        {
+            get { return EntityRes.GetString(EntityRes.ADP_InvalidSqlQueryMappingBehavior); }
+        }
     }
 
     // <summary>
@@ -15643,6 +15651,14 @@ namespace System.Data.Entity.Resources
         internal static Exception StoreTypeNotFound(object p0, object p1)
         {
             return new InvalidOperationException(Strings.StoreTypeNotFound(p0, p1));
+        }
+
+        // <summary>
+        // NotImplementedException with message like "Invalid SqlQueryMappingBehavior provided."
+        // </summary>
+        internal static Exception ADP_InvalidSqlQueryMappingBehavior()
+        {
+            return new NotImplementedException(Strings.ADP_InvalidSqlQueryMappingBehavior);
         }
 
         // <summary>
@@ -17430,6 +17446,7 @@ namespace System.Data.Entity.Resources
         internal const string CannotSetBaseTypeCyclicInheritance = "CannotSetBaseTypeCyclicInheritance";
         internal const string CannotDefineKeysOnBothBaseAndDerivedTypes = "CannotDefineKeysOnBothBaseAndDerivedTypes";
         internal const string StoreTypeNotFound = "StoreTypeNotFound";
+        internal const string ADP_InvalidSqlQueryMappingBehavior = "ADP_InvalidSqlQueryMappingBehavior";
 
         private static EntityRes loader;
         private readonly ResourceManager resources;

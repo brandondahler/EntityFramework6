@@ -26,6 +26,8 @@ namespace System.Data.Entity.Core.Objects
     using System.Data.Entity.Infrastructure.Interception;
     using System.Data.Entity.Infrastructure.MappingViews;
     using System.Data.Entity.Internal;
+    using System.Data.Entity.ModelConfiguration.Edm;
+    using System.Data.Entity.ModelConfiguration.Configuration.Properties.Primitive;
     using System.Data.Entity.Resources;
     using System.Data.Entity.Utilities;
     using System.Diagnostics;
@@ -4273,8 +4275,35 @@ namespace System.Data.Entity.Core.Objects
         /// </returns>
         public virtual ObjectResult<TElement> ExecuteStoreQuery<TElement>(string commandText, params object[] parameters)
         {
+            return ExecuteStoreQuery<TElement>(SqlQueryMappingBehavior.MemberNameOnly, commandText, parameters);
+        }
+
+        /// <summary>
+        /// Executes a query directly against the data source and returns a sequence of typed results. 
+        /// The query is specified using the server's native query language, such as SQL.
+        /// Results are not tracked by the context, use the overload that specifies an entity set name to track results.
+        ///
+        /// As with any API that accepts SQL it is important to parameterize any user input to protect against a SQL injection attack. You can include parameter place holders in the SQL query string and then supply parameter values as additional arguments. Any parameter values you supply will automatically be converted to a DbParameter.
+        /// context.ExecuteStoreQuery&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @p0", userSuppliedAuthor);
+        /// Alternatively, you can also construct a DbParameter and supply it to SqlQuery. This allows you to use named parameters in the SQL query string.
+        /// context.ExecuteStoreQuery&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @author", new SqlParameter("@author", userSuppliedAuthor));
+        /// </summary>
+        /// <typeparam name="TElement"> The element type of the result sequence. </typeparam>
+        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="commandText"> The query specified in the server's native query language. </param>
+        /// <param name="parameters"> 
+        /// The parameter values to use for the query. If output parameters are used, their values will not be 
+        /// available until the results have been read completely. This is due to the underlying behavior 
+        /// of DbDataReader, see http://go.microsoft.com/fwlink/?LinkID=398589 for more details.
+        /// </param>
+        /// <returns>
+        /// An enumeration of objects of type <typeparamref name="TElement" /> .
+        /// </returns>
+        public virtual ObjectResult<TElement> ExecuteStoreQuery<TElement>(
+            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, params object[] parameters)
+        {
             return ExecuteStoreQueryReliably<TElement>(
-                commandText, /*entitySetName:*/null, ExecutionOptions.Default, parameters);
+                sqlQueryMappingBehavior, commandText, /*entitySetName:*/null, ExecutionOptions.Default, parameters);
         }
 
         /// <summary>
@@ -4301,8 +4330,37 @@ namespace System.Data.Entity.Core.Objects
         public virtual ObjectResult<TElement> ExecuteStoreQuery<TElement>(
             string commandText, ExecutionOptions executionOptions, params object[] parameters)
         {
+            return ExecuteStoreQuery<TElement>(
+                SqlQueryMappingBehavior.MemberNameOnly, commandText, executionOptions, parameters);
+        }
+
+        /// <summary>
+        /// Executes a query directly against the data source and returns a sequence of typed results. 
+        /// The query is specified using the server's native query language, such as SQL.
+        /// Results are not tracked by the context, use the overload that specifies an entity set name to track results.
+        ///
+        /// As with any API that accepts SQL it is important to parameterize any user input to protect against a SQL injection attack. You can include parameter place holders in the SQL query string and then supply parameter values as additional arguments. Any parameter values you supply will automatically be converted to a DbParameter.
+        /// context.ExecuteStoreQuery&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @p0", userSuppliedAuthor);
+        /// Alternatively, you can also construct a DbParameter and supply it to SqlQuery. This allows you to use named parameters in the SQL query string.
+        /// context.ExecuteStoreQuery&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @author", new SqlParameter("@author", userSuppliedAuthor));
+        /// </summary>
+        /// <typeparam name="TElement"> The element type of the result sequence. </typeparam>
+        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="commandText"> The query specified in the server's native query language. </param>
+        /// <param name="executionOptions"> The options for executing this query. </param>
+        /// <param name="parameters"> 
+        /// The parameter values to use for the query. If output parameters are used, their values will not be 
+        /// available until the results have been read completely. This is due to the underlying behavior of 
+        /// DbDataReader, see http://go.microsoft.com/fwlink/?LinkID=398589 for more details.
+        /// </param>
+        /// <returns>
+        /// An enumeration of objects of type <typeparamref name="TElement" /> .
+        /// </returns>
+        public virtual ObjectResult<TElement> ExecuteStoreQuery<TElement>(
+            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, ExecutionOptions executionOptions, params object[] parameters)
+        {
             return ExecuteStoreQueryReliably<TElement>(
-                commandText, /*entitySetName:*/null, executionOptions, parameters);
+                sqlQueryMappingBehavior, commandText, /*entitySetName:*/null, executionOptions, parameters);
         }
 
         /// <summary>
@@ -4333,9 +4391,42 @@ namespace System.Data.Entity.Core.Objects
         public virtual ObjectResult<TElement> ExecuteStoreQuery<TElement>(
             string commandText, string entitySetName, MergeOption mergeOption, params object[] parameters)
         {
+            return ExecuteStoreQuery<TElement>(
+                SqlQueryMappingBehavior.MemberNameOnly, commandText, entitySetName, mergeOption, parameters);
+        }
+
+        /// <summary>
+        /// Executes a query directly against the data source and returns a sequence of typed results. 
+        /// The query is specified using the server's native query language, such as SQL.
+        /// If an entity set name is specified, results are tracked by the context.
+        ///
+        /// As with any API that accepts SQL it is important to parameterize any user input to protect against a SQL injection attack. You can include parameter place holders in the SQL query string and then supply parameter values as additional arguments. Any parameter values you supply will automatically be converted to a DbParameter.
+        /// context.ExecuteStoreQuery&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @p0", userSuppliedAuthor);
+        /// Alternatively, you can also construct a DbParameter and supply it to SqlQuery. This allows you to use named parameters in the SQL query string.
+        /// context.ExecuteStoreQuery&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @author", new SqlParameter("@author", userSuppliedAuthor));
+        /// </summary>
+        /// <typeparam name="TElement"> The element type of the result sequence. </typeparam>
+        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="commandText"> The query specified in the server's native query language. </param>
+        /// <param name="entitySetName">The entity set of the  TResult  type. If an entity set name is not provided, the results are not going to be tracked.</param>
+        /// <param name="mergeOption">
+        /// The <see cref="T:System.Data.Entity.Core.Objects.MergeOption" /> to use when executing the query. The default is
+        /// <see cref="F:System.Data.Entity.Core.Objects.MergeOption.AppendOnly" />.
+        /// </param>
+        /// <param name="parameters"> 
+        /// The parameter values to use for the query. If output parameters are used, their values will not be 
+        /// available until the results have been read completely. This is due to the underlying behavior 
+        /// of DbDataReader, see http://go.microsoft.com/fwlink/?LinkID=398589 for more details.
+        /// </param>
+        /// <returns>
+        /// An enumeration of objects of type <typeparamref name="TElement" /> .
+        /// </returns>
+        public virtual ObjectResult<TElement> ExecuteStoreQuery<TElement>(
+            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, string entitySetName, MergeOption mergeOption, params object[] parameters)
+        {
             Check.NotEmpty(entitySetName, "entitySetName");
             return ExecuteStoreQueryReliably<TElement>(
-                commandText, entitySetName, new ExecutionOptions(mergeOption), parameters);
+                sqlQueryMappingBehavior, commandText, entitySetName, new ExecutionOptions(mergeOption), parameters);
         }
 
         /// <summary>
@@ -4363,14 +4454,44 @@ namespace System.Data.Entity.Core.Objects
         public virtual ObjectResult<TElement> ExecuteStoreQuery<TElement>(
             string commandText, string entitySetName, ExecutionOptions executionOptions, params object[] parameters)
         {
+            return ExecuteStoreQuery<TElement>(
+                SqlQueryMappingBehavior.MemberNameOnly, commandText, entitySetName, executionOptions, parameters);
+        }
+
+        /// <summary>
+        /// Executes a query directly against the data source and returns a sequence of typed results. 
+        /// The query is specified using the server's native query language, such as SQL.
+        /// If an entity set name is specified, results are tracked by the context.
+        ///
+        /// As with any API that accepts SQL it is important to parameterize any user input to protect against a SQL injection attack. You can include parameter place holders in the SQL query string and then supply parameter values as additional arguments. Any parameter values you supply will automatically be converted to a DbParameter.
+        /// context.ExecuteStoreQuery&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @p0", userSuppliedAuthor);
+        /// Alternatively, you can also construct a DbParameter and supply it to SqlQuery. This allows you to use named parameters in the SQL query string.
+        /// context.ExecuteStoreQuery&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @author", new SqlParameter("@author", userSuppliedAuthor));
+        /// </summary>
+        /// <typeparam name="TElement"> The element type of the result sequence. </typeparam>
+        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="commandText"> The query specified in the server's native query language. </param>
+        /// <param name="entitySetName">The entity set of the  TResult  type. If an entity set name is not provided, the results are not going to be tracked.</param>
+        /// <param name="executionOptions"> The options for executing this query. </param>
+        /// <param name="parameters"> 
+        /// The parameter values to use for the query. If output parameters are used, their values will not be 
+        /// available until the results have been read completely. This is due to the underlying behavior 
+        /// of DbDataReader, see http://go.microsoft.com/fwlink/?LinkID=398589 for more details.
+        /// </param>
+        /// <returns>
+        /// An enumeration of objects of type <typeparamref name="TElement" /> .
+        /// </returns>
+        public virtual ObjectResult<TElement> ExecuteStoreQuery<TElement>(
+            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, string entitySetName, ExecutionOptions executionOptions, params object[] parameters)
+        {
             Check.NotEmpty(entitySetName, "entitySetName");
-            return ExecuteStoreQueryReliably<TElement>(commandText, entitySetName, executionOptions, parameters);
+            return ExecuteStoreQueryReliably<TElement>(sqlQueryMappingBehavior, commandText, entitySetName, executionOptions, parameters);
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "Buffer disposed by the returned ObjectResult")]
         private ObjectResult<TElement> ExecuteStoreQueryReliably<TElement>(
-            string commandText, string entitySetName, ExecutionOptions executionOptions, params object[] parameters)
+            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, string entitySetName, ExecutionOptions executionOptions, params object[] parameters)
         {
             AsyncMonitor.EnsureNotEntered();
 
@@ -4400,14 +4521,14 @@ namespace System.Data.Entity.Core.Objects
             return executionStrategy.Execute(
                 () => ExecuteInTransaction(
                     () => ExecuteStoreQueryInternal<TElement>(
-                        commandText, entitySetName, executionOptions, parameters),
+                        sqlQueryMappingBehavior, commandText, entitySetName, executionOptions, parameters),
                     executionStrategy, startLocalTransaction: false,
                     releaseConnectionOnSuccess: !executionOptions.UserSpecifiedStreaming.Value));
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed by ObjectResult")]
         private ObjectResult<TElement> ExecuteStoreQueryInternal<TElement>(
-            string commandText, string entitySetName, ExecutionOptions executionOptions, params object[] parameters)
+            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, string entitySetName, ExecutionOptions executionOptions, params object[] parameters)
         {
             DbDataReader reader = null;
             DbCommand command = null;
@@ -4423,7 +4544,7 @@ namespace System.Data.Entity.Core.Objects
                         : CommandBehavior.SequentialAccess);
 
                 shaperFactory = InternalTranslate<TElement>(
-                    reader, entitySetName, executionOptions.MergeOption, executionOptions.UserSpecifiedStreaming.Value, out entitySet,
+                    reader, sqlQueryMappingBehavior, entitySetName, executionOptions.MergeOption, executionOptions.UserSpecifiedStreaming.Value, out entitySet,
                     out edmType);
             }
             catch
@@ -4511,7 +4632,39 @@ namespace System.Data.Entity.Core.Objects
         [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
         public Task<ObjectResult<TElement>> ExecuteStoreQueryAsync<TElement>(string commandText, params object[] parameters)
         {
-            return ExecuteStoreQueryAsync<TElement>(commandText, CancellationToken.None, parameters);
+            return ExecuteStoreQueryAsync<TElement>(SqlQueryMappingBehavior.MemberNameOnly, commandText, parameters);
+        }
+
+        /// <summary>
+        /// Asynchronously executes a query directly against the data source and returns a sequence of typed results. 
+        /// The query is specified using the server's native query language, such as SQL.
+        /// Results are not tracked by the context, use the overload that specifies an entity set name to track results.
+        ///
+        /// As with any API that accepts SQL it is important to parameterize any user input to protect against a SQL injection attack. You can include parameter place holders in the SQL query string and then supply parameter values as additional arguments. Any parameter values you supply will automatically be converted to a DbParameter.
+        /// context.ExecuteStoreQueryAsync&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @p0", userSuppliedAuthor);
+        /// Alternatively, you can also construct a DbParameter and supply it to SqlQuery. This allows you to use named parameters in the SQL query string.
+        /// context.ExecuteStoreQueryAsync&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @author", new SqlParameter("@author", userSuppliedAuthor));
+        /// </summary>
+        /// <remarks>
+        /// Multiple active operations on the same context instance are not supported.  Use 'await' to ensure
+        /// that any asynchronous operations have completed before calling another method on this context.
+        /// </remarks>
+        /// <typeparam name="TElement"> The element type of the result sequence. </typeparam>
+        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="commandText"> The query specified in the server's native query language. </param>
+        /// <param name="parameters"> 
+        /// The parameter values to use for the query. If output parameters are used, their values will not be 
+        /// available until the results have been read completely. This is due to the underlying behavior 
+        /// of DbDataReader, see http://go.microsoft.com/fwlink/?LinkID=398589 for more details.
+        /// </param>
+        /// <returns>
+        /// A task that represents the asynchronous operation.
+        /// The task result contains an enumeration of objects of type <typeparamref name="TElement" /> .
+        /// </returns>
+        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
+        public Task<ObjectResult<TElement>> ExecuteStoreQueryAsync<TElement>(SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, params object[] parameters)
+        {
+            return ExecuteStoreQueryAsync<TElement>(sqlQueryMappingBehavior, commandText, CancellationToken.None, parameters);
         }
 
         /// <summary>
@@ -4546,12 +4699,48 @@ namespace System.Data.Entity.Core.Objects
         public virtual Task<ObjectResult<TElement>> ExecuteStoreQueryAsync<TElement>(
             string commandText, CancellationToken cancellationToken, params object[] parameters)
         {
+            return ExecuteStoreQueryAsync<TElement>(SqlQueryMappingBehavior.MemberNameOnly, commandText, cancellationToken, parameters);
+        }
+
+        /// <summary>
+        /// Asynchronously executes a query directly against the data source and returns a sequence of typed results. 
+        /// The query is specified using the server's native query language, such as SQL.
+        /// Results are not tracked by the context, use the overload that specifies an entity set name to track results.
+        ///
+        /// As with any API that accepts SQL it is important to parameterize any user input to protect against a SQL injection attack. You can include parameter place holders in the SQL query string and then supply parameter values as additional arguments. Any parameter values you supply will automatically be converted to a DbParameter.
+        /// context.ExecuteStoreQueryAsync&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @p0", userSuppliedAuthor);
+        /// Alternatively, you can also construct a DbParameter and supply it to SqlQuery. This allows you to use named parameters in the SQL query string.
+        /// context.ExecuteStoreQueryAsync&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @author", new SqlParameter("@author", userSuppliedAuthor));
+        /// </summary>
+        /// <remarks>
+        /// Multiple active operations on the same context instance are not supported.  Use 'await' to ensure
+        /// that any asynchronous operations have completed before calling another method on this context.
+        /// </remarks>
+        /// <typeparam name="TElement"> The element type of the result sequence. </typeparam>
+        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="commandText"> The query specified in the server's native query language. </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken" /> to observe while waiting for the task to complete.
+        /// </param>
+        /// <param name="parameters"> 
+        /// The parameter values to use for the query. If output parameters are used, their values will not be 
+        /// available until the results have been read completely. This is due to the underlying behavior 
+        /// of DbDataReader, see http://go.microsoft.com/fwlink/?LinkID=398589 for more details.
+        /// </param>
+        /// <returns>
+        /// A task that represents the asynchronous operation.
+        /// The task result contains an enumeration of objects of type <typeparamref name="TElement" /> .
+        /// </returns>
+        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
+        public virtual Task<ObjectResult<TElement>> ExecuteStoreQueryAsync<TElement>(
+            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, CancellationToken cancellationToken, params object[] parameters)
+        {
             AsyncMonitor.EnsureNotEntered();
 
             var executionStrategy = DbProviderServices.GetExecutionStrategy(Connection, MetadataWorkspace);
 
             return ExecuteStoreQueryReliablyAsync<TElement>(
-                commandText, /*entitySetName:*/null, ExecutionOptions.Default, cancellationToken, executionStrategy, parameters);
+                sqlQueryMappingBehavior, commandText, /*entitySetName:*/null, ExecutionOptions.Default, cancellationToken, executionStrategy, parameters);
         }
 
         /// <summary>
@@ -4585,7 +4774,42 @@ namespace System.Data.Entity.Core.Objects
             string commandText, ExecutionOptions executionOptions, params object[] parameters)
         {
             return ExecuteStoreQueryAsync<TElement>(
-                commandText, executionOptions, CancellationToken.None, parameters);
+                SqlQueryMappingBehavior.MemberNameOnly, commandText, executionOptions, parameters);
+        }
+
+        /// <summary>
+        /// Asynchronously executes a query directly against the data source and returns a sequence of typed results. 
+        /// The query is specified using the server's native query language, such as SQL.
+        /// Results are not tracked by the context, use the overload that specifies an entity set name to track results.
+        ///
+        /// As with any API that accepts SQL it is important to parameterize any user input to protect against a SQL injection attack. You can include parameter place holders in the SQL query string and then supply parameter values as additional arguments. Any parameter values you supply will automatically be converted to a DbParameter.
+        /// context.ExecuteStoreQueryAsync&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @p0", userSuppliedAuthor);
+        /// Alternatively, you can also construct a DbParameter and supply it to SqlQuery. This allows you to use named parameters in the SQL query string.
+        /// context.ExecuteStoreQueryAsync&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @author", new SqlParameter("@author", userSuppliedAuthor));
+        /// </summary>
+        /// <remarks>
+        /// Multiple active operations on the same context instance are not supported.  Use 'await' to ensure
+        /// that any asynchronous operations have completed before calling another method on this context.
+        /// </remarks>
+        /// <typeparam name="TElement"> The element type of the result sequence. </typeparam>
+        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="commandText"> The query specified in the server's native query language. </param>
+        /// <param name="executionOptions"> The options for executing this query. </param>
+        /// <param name="parameters"> 
+        /// The parameter values to use for the query. If output parameters are used, their values will not be 
+        /// available until the results have been read completely. This is due to the underlying behavior 
+        /// of DbDataReader, see http://go.microsoft.com/fwlink/?LinkID=398589 for more details.
+        /// </param>
+        /// <returns>
+        /// A task that represents the asynchronous operation.
+        /// The task result contains an enumeration of objects of type <typeparamref name="TElement" /> .
+        /// </returns>
+        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
+        public virtual Task<ObjectResult<TElement>> ExecuteStoreQueryAsync<TElement>(
+            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, ExecutionOptions executionOptions, params object[] parameters)
+        {
+            return ExecuteStoreQueryAsync<TElement>(
+                sqlQueryMappingBehavior, commandText, executionOptions, CancellationToken.None, parameters);
         }
 
         /// <summary>
@@ -4621,6 +4845,44 @@ namespace System.Data.Entity.Core.Objects
         public virtual Task<ObjectResult<TElement>> ExecuteStoreQueryAsync<TElement>(
             string commandText, ExecutionOptions executionOptions, CancellationToken cancellationToken, params object[] parameters)
         {
+            return ExecuteStoreQueryAsync<TElement>(
+                SqlQueryMappingBehavior.MemberNameOnly, commandText, executionOptions, cancellationToken, parameters);
+        }
+
+        /// <summary>
+        /// Asynchronously executes a query directly against the data source and returns a sequence of typed results. 
+        /// The query is specified using the server's native query language, such as SQL.
+        /// Results are not tracked by the context, use the overload that specifies an entity set name to track results.
+        ///
+        /// As with any API that accepts SQL it is important to parameterize any user input to protect against a SQL injection attack. You can include parameter place holders in the SQL query string and then supply parameter values as additional arguments. Any parameter values you supply will automatically be converted to a DbParameter.
+        /// context.ExecuteStoreQueryAsync&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @p0", userSuppliedAuthor);
+        /// Alternatively, you can also construct a DbParameter and supply it to SqlQuery. This allows you to use named parameters in the SQL query string.
+        /// context.ExecuteStoreQueryAsync&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @author", new SqlParameter("@author", userSuppliedAuthor));
+        /// </summary>
+        /// <remarks>
+        /// Multiple active operations on the same context instance are not supported.  Use 'await' to ensure
+        /// that any asynchronous operations have completed before calling another method on this context.
+        /// </remarks>
+        /// <typeparam name="TElement"> The element type of the result sequence. </typeparam>
+        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="commandText"> The query specified in the server's native query language. </param>
+        /// <param name="executionOptions"> The options for executing this query. </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken" /> to observe while waiting for the task to complete.
+        /// </param>
+        /// <param name="parameters"> 
+        /// The parameter values to use for the query. If output parameters are used, their values will not be 
+        /// available until the results have been read completely. This is due to the underlying behavior 
+        /// of DbDataReader, see http://go.microsoft.com/fwlink/?LinkID=398589 for more details.
+        /// </param>
+        /// <returns>
+        /// A task that represents the asynchronous operation.
+        /// The task result contains an enumeration of objects of type <typeparamref name="TElement" /> .
+        /// </returns>
+        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
+        public virtual Task<ObjectResult<TElement>> ExecuteStoreQueryAsync<TElement>(
+            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, ExecutionOptions executionOptions, CancellationToken cancellationToken, params object[] parameters)
+        {
             AsyncMonitor.EnsureNotEntered();
 
             var executionStrategy = DbProviderServices.GetExecutionStrategy(Connection, MetadataWorkspace);
@@ -4631,7 +4893,7 @@ namespace System.Data.Entity.Core.Objects
             }
 
             return ExecuteStoreQueryReliablyAsync<TElement>(
-                commandText, /*entitySetName:*/null, executionOptions, cancellationToken, executionStrategy, parameters);
+                sqlQueryMappingBehavior, commandText, /*entitySetName:*/null, executionOptions, cancellationToken, executionStrategy, parameters);
         }
 
         /// <summary>
@@ -4665,7 +4927,44 @@ namespace System.Data.Entity.Core.Objects
         public Task<ObjectResult<TElement>> ExecuteStoreQueryAsync<TElement>(
             string commandText, string entitySetName, ExecutionOptions executionOptions, params object[] parameters)
         {
-            return ExecuteStoreQueryAsync<TElement>(commandText, entitySetName, executionOptions, CancellationToken.None, parameters);
+            return ExecuteStoreQueryAsync<TElement>(
+                SqlQueryMappingBehavior.MemberNameOnly, commandText, entitySetName, executionOptions, parameters);
+        }
+
+        /// <summary>
+        /// Asynchronously executes a query directly against the data source and returns a sequence of typed results. 
+        /// The query is specified using the server's native query language, such as SQL.
+        /// If an entity set name is specified, results are tracked by the context.
+        ///
+        /// As with any API that accepts SQL it is important to parameterize any user input to protect against a SQL injection attack. You can include parameter place holders in the SQL query string and then supply parameter values as additional arguments. Any parameter values you supply will automatically be converted to a DbParameter.
+        /// context.ExecuteStoreQueryAsync&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @p0", userSuppliedAuthor);
+        /// Alternatively, you can also construct a DbParameter and supply it to SqlQuery. This allows you to use named parameters in the SQL query string.
+        /// context.ExecuteStoreQueryAsync&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @author", new SqlParameter("@author", userSuppliedAuthor));
+        /// </summary>
+        /// <remarks>
+        /// Multiple active operations on the same context instance are not supported.  Use 'await' to ensure
+        /// that any asynchronous operations have completed before calling another method on this context.
+        /// </remarks>
+        /// <typeparam name="TElement"> The element type of the result sequence. </typeparam>
+        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="commandText"> The query specified in the server's native query language. </param>
+        /// <param name="entitySetName">The entity set of the  TResult  type. If an entity set name is not provided, the results are not going to be tracked.</param>
+        /// <param name="executionOptions"> The options for executing this query. </param>
+        /// <param name="parameters"> 
+        /// The parameter values to use for the query. If output parameters are used, their values will not be 
+        /// available until the results have been read completely. This is due to the underlying behavior 
+        /// of DbDataReader, see http://go.microsoft.com/fwlink/?LinkID=398589 for more details.
+        /// </param>
+        /// <returns>
+        /// A task that represents the asynchronous operation.
+        /// The task result contains an enumeration of objects of type <typeparamref name="TElement" /> .
+        /// </returns>
+        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
+        public Task<ObjectResult<TElement>> ExecuteStoreQueryAsync<TElement>(
+            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, string entitySetName, ExecutionOptions executionOptions, params object[] parameters)
+        {
+            return ExecuteStoreQueryAsync<TElement>(
+                sqlQueryMappingBehavior, commandText, entitySetName, executionOptions, CancellationToken.None, parameters);
         }
 
         /// <summary>
@@ -4700,8 +4999,48 @@ namespace System.Data.Entity.Core.Objects
         /// </returns>
         [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
         public virtual Task<ObjectResult<TElement>> ExecuteStoreQueryAsync<TElement>(
-            string commandText, string entitySetName, ExecutionOptions executionOptions, CancellationToken cancellationToken,
-            params object[] parameters)
+            string commandText, string entitySetName, ExecutionOptions executionOptions,
+            CancellationToken cancellationToken, params object[] parameters)
+        {
+            return ExecuteStoreQueryAsync<TElement>(
+                SqlQueryMappingBehavior.MemberNameOnly, commandText, entitySetName, executionOptions, cancellationToken, parameters);
+        }
+
+        /// <summary>
+        /// Asynchronously executes a query directly against the data source and returns a sequence of typed results. 
+        /// The query is specified using the server's native query language, such as SQL.
+        /// If an entity set name is specified, results are tracked by the context.
+        ///
+        /// As with any API that accepts SQL it is important to parameterize any user input to protect against a SQL injection attack. You can include parameter place holders in the SQL query string and then supply parameter values as additional arguments. Any parameter values you supply will automatically be converted to a DbParameter.
+        /// context.ExecuteStoreQueryAsync&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @p0", userSuppliedAuthor);
+        /// Alternatively, you can also construct a DbParameter and supply it to SqlQuery. This allows you to use named parameters in the SQL query string.
+        /// context.ExecuteStoreQueryAsync&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @author", new SqlParameter("@author", userSuppliedAuthor));
+        /// </summary>
+        /// <remarks>
+        /// Multiple active operations on the same context instance are not supported.  Use 'await' to ensure
+        /// that any asynchronous operations have completed before calling another method on this context.
+        /// </remarks>
+        /// <typeparam name="TElement"> The element type of the result sequence. </typeparam>
+        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="commandText"> The query specified in the server's native query language. </param>
+        /// <param name="entitySetName">The entity set of the  TResult  type. If an entity set name is not provided, the results are not going to be tracked.</param>
+        /// <param name="executionOptions"> The options for executing this query. </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken" /> to observe while waiting for the task to complete.
+        /// </param>
+        /// <param name="parameters"> 
+        /// The parameter values to use for the query. If output parameters are used, their values will not be 
+        /// available until the results have been read completely. This is due to the underlying behavior 
+        /// of DbDataReader, see http://go.microsoft.com/fwlink/?LinkID=398589 for more details.
+        /// </param>
+        /// <returns>
+        /// A task that represents the asynchronous operation.
+        /// The task result contains an enumeration of objects of type <typeparamref name="TElement" /> .
+        /// </returns>
+        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
+        public virtual Task<ObjectResult<TElement>> ExecuteStoreQueryAsync<TElement>(
+            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, string entitySetName, ExecutionOptions executionOptions, 
+            CancellationToken cancellationToken, params object[] parameters)
         {
             Check.NotEmpty(entitySetName, "entitySetName");
             AsyncMonitor.EnsureNotEntered();
@@ -4714,12 +5053,12 @@ namespace System.Data.Entity.Core.Objects
             }
 
             return ExecuteStoreQueryReliablyAsync<TElement>(
-                commandText, entitySetName, executionOptions, cancellationToken, executionStrategy, parameters);
+                sqlQueryMappingBehavior, commandText, entitySetName, executionOptions, cancellationToken, executionStrategy, parameters);
         }
 
         private async Task<ObjectResult<TElement>> ExecuteStoreQueryReliablyAsync<TElement>(
-            string commandText, string entitySetName, ExecutionOptions executionOptions, CancellationToken cancellationToken,
-            IDbExecutionStrategy executionStrategy, params object[] parameters)
+            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, string entitySetName, ExecutionOptions executionOptions, 
+            CancellationToken cancellationToken, IDbExecutionStrategy executionStrategy, params object[] parameters)
         {
             if (executionOptions.MergeOption != MergeOption.NoTracking)
             {
@@ -4745,7 +5084,7 @@ namespace System.Data.Entity.Core.Objects
                 return await executionStrategy.ExecuteAsync(
                     () => ExecuteInTransactionAsync(
                         () => ExecuteStoreQueryInternalAsync<TElement>(
-                            commandText, entitySetName, executionOptions, cancellationToken, parameters),
+                            sqlQueryMappingBehavior, commandText, entitySetName, executionOptions, cancellationToken, parameters),
                         executionStrategy,
                         /*startLocalTransaction:*/ false, /*releaseConnectionOnSuccess:*/ !executionOptions.UserSpecifiedStreaming.Value,
                         cancellationToken),
@@ -4761,7 +5100,7 @@ namespace System.Data.Entity.Core.Objects
         }
 
         private async Task<ObjectResult<TElement>> ExecuteStoreQueryInternalAsync<TElement>(
-            string commandText, string entitySetName, ExecutionOptions executionOptions,
+            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, string entitySetName, ExecutionOptions executionOptions,
             CancellationToken cancellationToken, params object[] parameters)
         {
             DbDataReader reader = null;
@@ -4779,7 +5118,7 @@ namespace System.Data.Entity.Core.Objects
                     cancellationToken).WithCurrentCulture();
 
                 shaperFactory = InternalTranslate<TElement>(
-                    reader, entitySetName, executionOptions.MergeOption, executionOptions.UserSpecifiedStreaming.Value, out entitySet,
+                    reader, sqlQueryMappingBehavior, entitySetName, executionOptions.MergeOption, executionOptions.UserSpecifiedStreaming.Value, out entitySet,
                     out edmType);
             }
             catch
@@ -4847,6 +5186,21 @@ namespace System.Data.Entity.Core.Objects
         /// <exception cref="T:System.ArgumentNullException">When  reader  is null.</exception>
         public virtual ObjectResult<TElement> Translate<TElement>(DbDataReader reader)
         {
+            return Translate<TElement>(reader, SqlQueryMappingBehavior.MemberNameOnly);
+        }
+
+        /// <summary>
+        /// Translates a <see cref="T:System.Data.Common.DbDataReader" /> that contains rows of entity data to objects of the requested entity type.
+        /// </summary>
+        /// <typeparam name="TElement">The entity type.</typeparam>
+        /// <returns>An enumeration of objects of type  TResult .</returns>
+        /// <param name="reader">
+        /// The <see cref="T:System.Data.Common.DbDataReader" /> that contains entity data to translate into entity objects.
+        /// </param>
+        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <exception cref="T:System.ArgumentNullException">When  reader  is null.</exception>
+        public virtual ObjectResult<TElement> Translate<TElement>(DbDataReader reader, SqlQueryMappingBehavior sqlQueryMappingBehavior)
+        {
             // Ensure the assembly containing the entity's CLR type
             // is loaded into the workspace. If the schema types are not loaded
             // metadata, cache & query would be unable to reason about the type. We
@@ -4860,7 +5214,7 @@ namespace System.Data.Entity.Core.Objects
             EntitySet entitySet;
             TypeUsage edmType;
             var shaperFactory = InternalTranslate<TElement>(
-                reader, /*entitySetName:*/ null, MergeOption.AppendOnly, /*streaming:*/ false, out entitySet, out edmType);
+                reader, sqlQueryMappingBehavior, /*entitySetName:*/ null, MergeOption.AppendOnly, /*streaming:*/ false, out entitySet, out edmType);
             return ShapeResult(
                 reader, MergeOption.AppendOnly, /*readerOwned:*/ false, /*streaming:*/ false, shaperFactory, entitySet, edmType);
         }
@@ -4889,6 +5243,34 @@ namespace System.Data.Entity.Core.Objects
             Justification = "Generic parameters are required for strong-typing of the return type.")]
         public virtual ObjectResult<TEntity> Translate<TEntity>(DbDataReader reader, string entitySetName, MergeOption mergeOption)
         {
+            return Translate<TEntity>(reader, SqlQueryMappingBehavior.MemberNameOnly, entitySetName, mergeOption);
+        }
+
+        /// <summary>
+        /// Translates a <see cref="T:System.Data.Common.DbDataReader" /> that contains rows of entity data to objects of the requested entity type, in a specific entity set, and with the specified merge option.
+        /// </summary>
+        /// <typeparam name="TEntity">The entity type.</typeparam>
+        /// <returns>An enumeration of objects of type  TResult .</returns>
+        /// <param name="reader">
+        /// The <see cref="T:System.Data.Common.DbDataReader" /> that contains entity data to translate into entity objects.
+        /// </param>
+        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="entitySetName">The entity set of the  TResult  type.</param>
+        /// <param name="mergeOption">
+        /// The <see cref="T:System.Data.Entity.Core.Objects.MergeOption" /> to use when translated objects are added to the object context. The default is
+        /// <see
+        ///     cref="F:System.Data.Entity.Core.Objects.MergeOption.AppendOnly" />
+        /// .
+        /// </param>
+        /// <exception cref="T:System.ArgumentNullException">When  reader  is null.</exception>
+        /// <exception cref="T:System.ArgumentOutOfRangeException">
+        /// When the supplied  mergeOption  is not a valid <see cref="T:System.Data.Entity.Core.Objects.MergeOption" /> value.
+        /// </exception>
+        /// <exception cref="T:System.InvalidOperationException">When the supplied  entitySetName  is not a valid entity set for the  TResult  type. </exception>
+        [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter",
+            Justification = "Generic parameters are required for strong-typing of the return type.")]
+        public virtual ObjectResult<TEntity> Translate<TEntity>(DbDataReader reader, SqlQueryMappingBehavior sqlQueryMappingBehavior, string entitySetName, MergeOption mergeOption)
+        {
             Check.NotEmpty(entitySetName, "entitySetName");
 
             // Ensure the assembly containing the entity's CLR type
@@ -4904,13 +5286,15 @@ namespace System.Data.Entity.Core.Objects
             EntitySet entitySet;
             TypeUsage edmType;
             var shaperFactory = InternalTranslate<TEntity>(
-                reader, entitySetName, mergeOption, /*streaming:*/ false, out entitySet, out edmType);
+                reader, sqlQueryMappingBehavior, entitySetName, mergeOption, /*streaming:*/ false, out entitySet, out edmType);
             return ShapeResult(
                 reader, mergeOption, /*readerOwned:*/ false, /*streaming:*/ false, shaperFactory, entitySet, edmType);
         }
 
+
+        [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
         private ShaperFactory<TElement> InternalTranslate<TElement>(
-            DbDataReader reader, string entitySetName, MergeOption mergeOption, bool streaming, out EntitySet entitySet, out TypeUsage edmType)
+            DbDataReader reader, SqlQueryMappingBehavior sqlQueryMappingBehavior, string entitySetName, MergeOption mergeOption, bool streaming, out EntitySet entitySet, out TypeUsage edmType)
         {
             DebugCheck.NotNull(reader);
             EntityUtil.CheckArgumentMergeOption(mergeOption);
@@ -4938,7 +5322,30 @@ namespace System.Data.Entity.Core.Objects
                             entitySet.Name, typeof(TElement)));
                 }
 
-                columnMap = _columnMapFactory.CreateColumnMapFromReaderAndType(reader, modelEdmType, entitySet, null);
+
+                
+                var renameList = new Dictionary<string, FunctionImportReturnTypeStructuralTypeColumnRenameMapping>();
+
+                // Build rename list if type is an entity type
+                var entityType = modelEdmType as EntityType;
+                if (entityType != null)
+                {
+                    foreach (var property in entityType.Properties)
+                    {
+                        var configuration = property.GetConfiguration() as PrimitivePropertyConfiguration;
+
+                        if (configuration != null && !string.IsNullOrEmpty(configuration.ColumnName))
+                        {
+                            var mapping = new FunctionImportReturnTypeStructuralTypeColumnRenameMapping(property.Name);
+                            mapping.AddRename(new FunctionImportReturnTypeStructuralTypeColumn(configuration.ColumnName, entityType, false, null));
+
+                            renameList.Add(property.Name, mapping);
+                        }
+                    }
+                }
+
+
+                columnMap = _columnMapFactory.CreateColumnMapFromReaderAndType(reader, sqlQueryMappingBehavior, modelEdmType, entitySet, renameList);
             }
             else
             {

@@ -19,6 +19,7 @@ namespace System.Data.Entity.Internal
     {
         #region Constructors and fields
 
+        private readonly SqlQueryMappingBehavior _sqlQueryMappingBehavior;
         private readonly string _sql;
         private readonly object[] _parameters;
         private readonly bool? _streaming;
@@ -26,14 +27,16 @@ namespace System.Data.Entity.Internal
         // <summary>
         // Initializes a new instance of the <see cref="InternalSqlQuery" /> class.
         // </summary>
+        // <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
         // <param name="sql"> The SQL. </param>
         // <param name="streaming"> Whether the query is streaming or buffering. </param>
         // <param name="parameters"> The parameters. </param>
-        internal InternalSqlQuery(string sql, bool? streaming, object[] parameters)
+        internal InternalSqlQuery(SqlQueryMappingBehavior sqlQueryMappingBehavior, string sql, bool? streaming, object[] parameters)
         {
             DebugCheck.NotNull(sql);
             DebugCheck.NotNull(parameters);
 
+            _sqlQueryMappingBehavior = sqlQueryMappingBehavior;
             _sql = sql;
             _parameters = parameters;
             _streaming = streaming;
@@ -42,6 +45,15 @@ namespace System.Data.Entity.Internal
         #endregion
 
         #region Access to the SQL string and parameters
+
+        /// <summary>
+        /// Gets the SQL query mapping behavior.
+        /// </summary>
+        /// <value> The SQL query mapping behavior. </value>
+        public SqlQueryMappingBehavior SqlQueryMappingBehavior
+        {
+            get { return _sqlQueryMappingBehavior; }
+        }
 
         // <summary>
         // Gets the SQL query string,

@@ -18,6 +18,7 @@ namespace ProductivityApiTests
     using SimpleModel;
     using Xunit;
     using Xunit.Extensions;
+    using SqlQueryMappedModel = System.Data.Entity.TestModels.SqlQueryMappedModel;
 
     /// <summary>
     ///     Functional tests for DbSqlQuery and other raw SQL functionality.
@@ -500,6 +501,270 @@ namespace ProductivityApiTests
                 MutableResolver.ClearResolvers();
             }
         }
+
+        #endregion
+
+        #region SQL queries for configured entities
+
+        #region Generic
+
+        [Fact]
+        public void Database_Generic_SqlQuery_DefaultBehavior()
+        {
+            using (var context = new SqlQueryMappedModel.SqlQueryMappedContext())
+            {
+                var mappedEntity = context.MappedEntities.First();
+
+                var mappedEntityFromSqlQuery = context.Database.SqlQuery<SqlQueryMappedModel.MappedEntity>(
+                        "SELECT Id, RemappedColumn AS MappedColumn, UnmappedColumn FROM MappedEntities;")
+                    .First();
+
+                Assert.Equal(mappedEntity.Id, mappedEntityFromSqlQuery.Id);
+                Assert.Equal(mappedEntity.MappedColumn, mappedEntityFromSqlQuery.MappedColumn);
+                Assert.Equal(mappedEntity.UnmappedColumn, mappedEntityFromSqlQuery.UnmappedColumn);
+
+                Assert.Throws<EntityCommandExecutionException>(() =>
+                    context.Database.SqlQuery<SqlQueryMappedModel.MappedEntity>(
+                        "SELECT Id, RemappedColumn, UnmappedColumn FROM MappedEntities;")
+                    .First());
+            }
+        }
+
+        [Fact]
+        public void Database_Generic_SqlQuery_MemberNameOnly()
+        {
+            using (var context = new SqlQueryMappedModel.SqlQueryMappedContext())
+            {
+                var mappedEntity = context.MappedEntities.First();
+
+                var mappedEntityFromSqlQuery = context.Database.SqlQuery<SqlQueryMappedModel.MappedEntity>(
+                        SqlQueryMappingBehavior.MemberNameOnly,
+                        "SELECT Id, RemappedColumn AS MappedColumn, UnmappedColumn FROM MappedEntities;")
+                    .First();
+
+                Assert.Equal(mappedEntity.Id, mappedEntityFromSqlQuery.Id);
+                Assert.Equal(mappedEntity.MappedColumn, mappedEntityFromSqlQuery.MappedColumn);
+                Assert.Equal(mappedEntity.UnmappedColumn, mappedEntityFromSqlQuery.UnmappedColumn);
+
+                Assert.Throws<EntityCommandExecutionException>(() =>
+                    context.Database.SqlQuery<SqlQueryMappedModel.MappedEntity>(
+                            SqlQueryMappingBehavior.MemberNameOnly,
+                            "SELECT Id, RemappedColumn, UnmappedColumn FROM MappedEntities;")
+                        .First());
+            }
+        }
+
+        [Fact]
+        public void Database_Generic_SqlQuery_ColumnAliasFallback()
+        {
+            using (var context = new SqlQueryMappedModel.SqlQueryMappedContext())
+            {
+                var mappedEntity = context.MappedEntities.First();
+                var sqls = new[] {
+                    "SELECT Id, RemappedColumn AS MappedColumn, UnmappedColumn FROM MappedEntities;",
+                    "SELECT Id, RemappedColumn, UnmappedColumn FROM MappedEntities;"
+                };
+                
+                foreach (var sql in sqls)
+                {
+                    var mappedEntityFromSqlQuery = context.Database.SqlQuery<SqlQueryMappedModel.MappedEntity>(
+                            SqlQueryMappingBehavior.ColumnAliasFallback,
+                            sql)
+                        .First();
+
+                    Assert.Equal(mappedEntity.Id, mappedEntityFromSqlQuery.Id);
+                    Assert.Equal(mappedEntity.MappedColumn, mappedEntityFromSqlQuery.MappedColumn);
+                    Assert.Equal(mappedEntity.UnmappedColumn, mappedEntityFromSqlQuery.UnmappedColumn);
+                }
+            }
+        }
+
+
+        [Fact]
+        public void Database_Generic_SqlQuery_ColumnAliasOnly()
+        {
+            using (var context = new SqlQueryMappedModel.SqlQueryMappedContext())
+            {
+                var mappedEntity = context.MappedEntities.First();
+
+                var mappedEntityFromSqlQuery = context.Database.SqlQuery<SqlQueryMappedModel.MappedEntity>(
+                        SqlQueryMappingBehavior.ColumnAliasOnly,
+                        "SELECT Id, RemappedColumn, UnmappedColumn FROM MappedEntities;")
+                    .First();
+
+                Assert.Equal(mappedEntity.Id, mappedEntityFromSqlQuery.Id);
+                Assert.Equal(mappedEntity.MappedColumn, mappedEntityFromSqlQuery.MappedColumn);
+                Assert.Equal(mappedEntity.UnmappedColumn, mappedEntityFromSqlQuery.UnmappedColumn);
+
+                Assert.Throws<EntityCommandExecutionException>(() =>
+                    context.Database.SqlQuery<SqlQueryMappedModel.MappedEntity>(
+                            SqlQueryMappingBehavior.ColumnAliasOnly,
+                            "SELECT Id, RemappedColumn AS MappedColumn, UnmappedColumn FROM MappedEntities;")
+                        .First());
+            }
+        }
+
+        [Fact]
+        public void Database_Generic_SqlQuery_MemberNameFallback()
+        {
+            using (var context = new SqlQueryMappedModel.SqlQueryMappedContext())
+            {
+                var mappedEntity = context.MappedEntities.First();
+                var sqls = new[] {
+                    "SELECT Id, RemappedColumn, UnmappedColumn FROM MappedEntities;",
+                    "SELECT Id, RemappedColumn AS MappedColumn, UnmappedColumn FROM MappedEntities;"
+                };
+
+                foreach (var sql in sqls)
+                {
+                    var mappedEntityFromSqlQuery = context.Database.SqlQuery<SqlQueryMappedModel.MappedEntity>(
+                            SqlQueryMappingBehavior.MemberNameFallback,
+                            sql)
+                        .First();
+
+                    Assert.Equal(mappedEntity.Id, mappedEntityFromSqlQuery.Id);
+                    Assert.Equal(mappedEntity.MappedColumn, mappedEntityFromSqlQuery.MappedColumn);
+                    Assert.Equal(mappedEntity.UnmappedColumn, mappedEntityFromSqlQuery.UnmappedColumn);
+                }
+            }
+        }
+
+        #endregion
+
+        #region Non-generic
+
+
+        [Fact]
+        public void Database_SqlQuery_DefaultBehavior()
+        {
+            using (var context = new SqlQueryMappedModel.SqlQueryMappedContext())
+            {
+                var mappedEntity = context.MappedEntities.First();
+
+                var mappedEntityFromSqlQuery = context.Database.SqlQuery(typeof(SqlQueryMappedModel.MappedEntity),
+                        "SELECT Id, RemappedColumn AS MappedColumn, UnmappedColumn FROM MappedEntities;")
+                    .Cast<SqlQueryMappedModel.MappedEntity>()
+                    .First();
+
+                Assert.Equal(mappedEntity.Id, mappedEntityFromSqlQuery.Id);
+                Assert.Equal(mappedEntity.MappedColumn, mappedEntityFromSqlQuery.MappedColumn);
+                Assert.Equal(mappedEntity.UnmappedColumn, mappedEntityFromSqlQuery.UnmappedColumn);
+
+                Assert.Throws<EntityCommandExecutionException>(() =>
+                    context.Database.SqlQuery(typeof(SqlQueryMappedModel.MappedEntity),
+                        "SELECT Id, RemappedColumn, UnmappedColumn FROM MappedEntities;")
+                    .Cast<SqlQueryMappedModel.MappedEntity>()
+                    .First());
+            }
+        }
+
+        [Fact]
+        public void Database_SqlQuery_MemberNameOnly()
+        {
+            using (var context = new SqlQueryMappedModel.SqlQueryMappedContext())
+            {
+                var mappedEntity = context.MappedEntities.First();
+
+                var mappedEntityFromSqlQuery = context.Database.SqlQuery(typeof(SqlQueryMappedModel.MappedEntity),
+                        SqlQueryMappingBehavior.MemberNameOnly,
+                        "SELECT Id, RemappedColumn AS MappedColumn, UnmappedColumn FROM MappedEntities;")
+                    .Cast<SqlQueryMappedModel.MappedEntity>()
+                    .First();
+
+                Assert.Equal(mappedEntity.Id, mappedEntityFromSqlQuery.Id);
+                Assert.Equal(mappedEntity.MappedColumn, mappedEntityFromSqlQuery.MappedColumn);
+                Assert.Equal(mappedEntity.UnmappedColumn, mappedEntityFromSqlQuery.UnmappedColumn);
+
+                Assert.Throws<EntityCommandExecutionException>(() =>
+                    context.Database.SqlQuery(typeof(SqlQueryMappedModel.MappedEntity),
+                            SqlQueryMappingBehavior.MemberNameOnly,
+                            "SELECT Id, RemappedColumn, UnmappedColumn FROM MappedEntities;")
+                        .Cast<SqlQueryMappedModel.MappedEntity>()
+                        .First());
+            }
+        }
+
+        [Fact]
+        public void Database_SqlQuery_ColumnAliasFallback()
+        {
+            using (var context = new SqlQueryMappedModel.SqlQueryMappedContext())
+            {
+                var mappedEntity = context.MappedEntities.First();
+                var sqls = new[] {
+                    "SELECT Id, RemappedColumn AS MappedColumn, UnmappedColumn FROM MappedEntities;",
+                    "SELECT Id, RemappedColumn, UnmappedColumn FROM MappedEntities;"
+                };
+
+                foreach (var sql in sqls)
+                {
+                    var mappedEntityFromSqlQuery = context.Database.SqlQuery(typeof(SqlQueryMappedModel.MappedEntity),
+                            SqlQueryMappingBehavior.ColumnAliasFallback,
+                            sql)
+                        .Cast<SqlQueryMappedModel.MappedEntity>()
+                        .First();
+
+                    Assert.Equal(mappedEntity.Id, mappedEntityFromSqlQuery.Id);
+                    Assert.Equal(mappedEntity.MappedColumn, mappedEntityFromSqlQuery.MappedColumn);
+                    Assert.Equal(mappedEntity.UnmappedColumn, mappedEntityFromSqlQuery.UnmappedColumn);
+                }
+            }
+        }
+
+
+        [Fact]
+        public void Database_SqlQuery_ColumnAliasOnly()
+        {
+            using (var context = new SqlQueryMappedModel.SqlQueryMappedContext())
+            {
+                var mappedEntity = context.MappedEntities.First();
+
+                var mappedEntityFromSqlQuery = context.Database.SqlQuery(typeof(SqlQueryMappedModel.MappedEntity),
+                        SqlQueryMappingBehavior.ColumnAliasOnly,
+                        "SELECT Id, RemappedColumn, UnmappedColumn FROM MappedEntities;")
+                    .Cast<SqlQueryMappedModel.MappedEntity>()
+                    .First();
+
+                Assert.Equal(mappedEntity.Id, mappedEntityFromSqlQuery.Id);
+                Assert.Equal(mappedEntity.MappedColumn, mappedEntityFromSqlQuery.MappedColumn);
+                Assert.Equal(mappedEntity.UnmappedColumn, mappedEntityFromSqlQuery.UnmappedColumn);
+
+                Assert.Throws<EntityCommandExecutionException>(() =>
+                    context.Database.SqlQuery(typeof(SqlQueryMappedModel.MappedEntity),
+                            SqlQueryMappingBehavior.ColumnAliasOnly,
+                            "SELECT Id, RemappedColumn AS MappedColumn, UnmappedColumn FROM MappedEntities;")
+                        .Cast<SqlQueryMappedModel.MappedEntity>()
+                        .First());
+            }
+        }
+
+        [Fact]
+        public void Database_SqlQuery_MemberNameFallback()
+        {
+            using (var context = new SqlQueryMappedModel.SqlQueryMappedContext())
+            {
+                var mappedEntity = context.MappedEntities.First();
+                var sqls = new[] {
+                    "SELECT Id, RemappedColumn, UnmappedColumn FROM MappedEntities;",
+                    "SELECT Id, RemappedColumn AS MappedColumn, UnmappedColumn FROM MappedEntities;"
+                };
+
+                foreach (var sql in sqls)
+                {
+                    var mappedEntityFromSqlQuery = context.Database.SqlQuery(typeof(SqlQueryMappedModel.MappedEntity),
+                            SqlQueryMappingBehavior.MemberNameFallback,
+                            sql)
+                        .Cast<SqlQueryMappedModel.MappedEntity>()
+                        .First();
+
+                    Assert.Equal(mappedEntity.Id, mappedEntityFromSqlQuery.Id);
+                    Assert.Equal(mappedEntity.MappedColumn, mappedEntityFromSqlQuery.MappedColumn);
+                    Assert.Equal(mappedEntity.UnmappedColumn, mappedEntityFromSqlQuery.UnmappedColumn);
+                }
+            }
+        }
+
+
+        #endregion
 
         #endregion
 
