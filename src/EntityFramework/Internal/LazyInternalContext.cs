@@ -7,13 +7,17 @@ namespace System.Data.Entity.Internal
     using System.Data.Entity.Core.EntityClient;
     using System.Data.Entity.Core.Objects;
     using System.Data.Entity.Infrastructure;
+    using System.Data.Entity.Infrastructure.Caching;
+    using System.Data.Entity.Infrastructure.DependencyResolution;
     using System.Data.Entity.Infrastructure.Interception;
+    using System.Data.Entity.Migrations.History;
     using System.Data.Entity.ModelConfiguration.Utilities;
     using System.Data.Entity.Resources;
     using System.Data.Entity.Utilities;
     using System.Diagnostics;
     using System.Globalization;
     using System.Linq;
+    using System.Reflection;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -30,6 +34,11 @@ namespace System.Data.Entity.Internal
         // The initialization strategy to use for Code First if no other strategy is set for a context.
         private static readonly CreateDatabaseIfNotExists<DbContext> _defaultCodeFirstInitializer =
             new CreateDatabaseIfNotExists<DbContext>();
+
+        // A cache from Assembly to AssemblyEntityCache objects to handle reading and adding cacheModel entries to a persistent cache.
+        private static readonly
+            ConcurrentDictionary<Assembly, IDbModelCache> _dbModelCaches =
+                new ConcurrentDictionary<Assembly, IDbModelCache>();
 
         // A cache from context type and provider invariant name to DbCompiledModel objects such that the model for a derived context type is only used once.
         private static readonly
@@ -85,9 +94,13 @@ namespace System.Data.Entity.Internal
 
         private readonly Func<DbContext, IDbModelCacheKey> _cacheKeyFactory;
 
+        private readonly Func<Assembly, IDbModelCache> _dbModelCacheFactory;
+
         private readonly AttributeProvider _attributeProvider;
 
         private DbModel _modelBeingInitialized;
+
+
 
         // <summary>
         // Constructs a <see cref="LazyInternalContext" /> for the given <see cref="DbContext" /> owner that will be initialized
@@ -102,6 +115,7 @@ namespace System.Data.Entity.Internal
             DbContext owner,
             IInternalConnection internalConnection,
             DbCompiledModel model,
+            Func<Assembly, IDbModelCache> dbModelCacheFactory = null,
             Func<DbContext, IDbModelCacheKey> cacheKeyFactory = null,
             AttributeProvider attributeProvider = null,
             Lazy<DbDispatchers> dispatchers = null,
@@ -112,6 +126,7 @@ namespace System.Data.Entity.Internal
 
             _internalConnection = internalConnection;
             _model = model;
+            _dbModelCacheFactory = dbModelCacheFactory ?? AssemblyDbModelCache.Create;
             _cacheKeyFactory = cacheKeyFactory ?? new DefaultModelCacheKeyFactory().Create;
             _attributeProvider = attributeProvider ?? new AttributeProvider();
             _objectContext = objectContext;
@@ -438,12 +453,25 @@ namespace System.Data.Entity.Internal
                             // try again later when the resource issue has potentially been resolved. To enable this RetryLazy will
                             // try again next time GetValue called. We have to pass the context to GetValue so that the next time it tries
                             // again it will use the new connection.
-
                             var key = _cacheKeyFactory(Owner);
+                            Action<DbModel> extraCacheAction = null;
 
-                            var model
-                                = _cachedModels.GetOrAdd(
-                                    key, t => new RetryLazy<LazyInternalContext, DbCompiledModel>(CreateModel)).GetValue(this);
+                            var contextType = Owner.GetType();
+                            if (contextType != typeof(HistoryContext))
+                            {
+                                var dbModelCache = _dbModelCaches
+                                    .GetOrAdd(Assembly.GetAssembly(contextType), LoadDbModelCache);
+
+                                extraCacheAction = (dm) => dbModelCache.StoreModel(key, dm);
+                            }
+
+
+                            var model = _cachedModels
+                                .GetOrAdd(
+                                    key,
+                                    t => new RetryLazy<LazyInternalContext, DbCompiledModel>(
+                                        ic => CreateModel(ic, extraCacheAction)))
+                                .GetValue(this);
 
                             _objectContext = model.CreateObjectContext<ObjectContext>(_internalConnection.Connection);
 
@@ -473,12 +501,32 @@ namespace System.Data.Entity.Internal
             }
         }
 
+        public IDbModelCache LoadDbModelCache(Assembly assembly)
+        {
+            var dbModelCache = _dbModelCacheFactory(assembly);
+            var modelBuilder = CreateModelBuilder();
+
+            // Load contained models into _cachedModels
+            foreach (var storedModel in dbModelCache.GetStoredModels(modelBuilder))
+            {
+                _cachedModels[storedModel.Key] =
+                    new RetryLazy<LazyInternalContext, DbCompiledModel>(lc => storedModel.Value);
+            }
+
+            return dbModelCache;
+        }
+
         // <summary>
         // Creates an immutable, cacheable representation of the model defined by this builder.
         // This model can be used to create an <see cref="ObjectContext" /> or can be passed to a <see cref="DbContext" />
         // constructor to create a <see cref="DbContext" /> for this model.
         // </summary>
         public static DbCompiledModel CreateModel(LazyInternalContext internalContext)
+        {
+            return CreateModel(internalContext, null);
+        }
+
+        internal static DbCompiledModel CreateModel(LazyInternalContext internalContext, Action<DbModel> extraCacheAction)
         {
             var modelBuilder = internalContext.CreateModelBuilder();
 
@@ -488,6 +536,12 @@ namespace System.Data.Entity.Internal
                       : modelBuilder.Build(internalContext._modelProviderInfo);
 
             internalContext._modelBeingInitialized = model;
+
+
+            if (extraCacheAction != null)
+            {
+                extraCacheAction(model);
+            }
 
             return model.Compile();
         }

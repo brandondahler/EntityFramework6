@@ -2,8 +2,11 @@
 
 namespace ProductivityApiTests
 {
+    using System;
     using System.Collections.Generic;
     using System.Data.Entity;
+    using System.Data.Entity.TestModels.GearsOfWarModel;
+    using System.Diagnostics;
     using Xunit;
 
     /// <summary>
@@ -142,5 +145,34 @@ namespace ProductivityApiTests
         }
 
         #endregion
+
+        [Fact]
+        public void Test123_test()
+        {
+
+            var stopwatch = new Stopwatch();
+
+            stopwatch.Start();
+            using (var testContext = new GearsOfWarContext())
+            {
+                testContext.Database.Initialize(true);
+                stopwatch.Stop();
+            }
+
+            Console.WriteLine(stopwatch.Elapsed);
+
+
+
+
+            stopwatch.Restart();
+            using (var testContext = new GearsOfWarContext())
+            {
+                testContext.Database.Initialize(true);
+                stopwatch.Stop();
+            }
+
+            Console.WriteLine(stopwatch.Elapsed);
+
+        }
     }
 }

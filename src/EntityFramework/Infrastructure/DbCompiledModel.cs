@@ -43,16 +43,15 @@ namespace System.Data.Entity.Infrastructure
         {
         }
 
-        // <summary>
-        // Creates a model for the given EDM metadata model.
-        // </summary>
-        // <param name="model"> The EDM metadata model. </param>
-        internal DbCompiledModel(DbModel model)
+        /// <summary>
+        /// Creates a model for the given EDM metadata workspace and model builder.
+        /// </summary>
+        /// <param name="workspace"> The EDM metadata workspace. </param>
+        /// <param name="cachedModelBuilder">The builder for this model.</param>
+        internal DbCompiledModel(CodeFirstCachedMetadataWorkspace workspace, DbModelBuilder cachedModelBuilder)
         {
-            DebugCheck.NotNull(model);
-
-            _workspace = new CodeFirstCachedMetadataWorkspace(model.DatabaseMapping);
-            _cachedModelBuilder = model.CachedModelBuilder;
+            _workspace = workspace;
+            _cachedModelBuilder = cachedModelBuilder;
         }
 
         #endregion

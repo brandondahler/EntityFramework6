@@ -2,6 +2,8 @@
 
 namespace System.Data.Entity.Infrastructure
 {
+    using System.Runtime.Serialization;
+
     /// <summary>
     /// Represents a key value that uniquely identifies an Entity Framework model that has been loaded into memory.
     /// </summary>

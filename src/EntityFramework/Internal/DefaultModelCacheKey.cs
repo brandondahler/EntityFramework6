@@ -6,6 +6,7 @@ namespace System.Data.Entity.Internal
     using System.Data.Entity.Utilities;
     using System.Diagnostics;
 
+    [Serializable]
     internal sealed class DefaultModelCacheKey : IDbModelCacheKey
     {
         private readonly Type _contextType;

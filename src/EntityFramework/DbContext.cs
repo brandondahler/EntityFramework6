@@ -7,12 +7,14 @@ namespace System.Data.Entity
     using System.Data.Common;
     using System.Data.Entity.Core.Objects;
     using System.Data.Entity.Infrastructure;
+    using System.Data.Entity.Infrastructure.Caching;
     using System.Data.Entity.Infrastructure.DependencyResolution;
     using System.Data.Entity.Internal;
     using System.Data.Entity.ModelConfiguration.Utilities;
     using System.Data.Entity.Utilities;
     using System.Data.Entity.Validation;
     using System.Diagnostics.CodeAnalysis;
+    using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -192,6 +194,7 @@ namespace System.Data.Entity
 
             _internalContext = new LazyInternalContext(
                     this, internalConnection, model
+                    , DbConfiguration.DependencyResolver.GetService<Func<Assembly, IDbModelCache>>()
                     , DbConfiguration.DependencyResolver.GetService<Func<DbContext, IDbModelCacheKey>>()
                     , DbConfiguration.DependencyResolver.GetService<AttributeProvider>());
             DiscoverAndInitializeSets();

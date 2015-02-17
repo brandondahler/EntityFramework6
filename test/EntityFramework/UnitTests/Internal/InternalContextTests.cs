@@ -388,7 +388,7 @@ namespace System.Data.Entity.Internal
 
                 var context = new Mock<DbContext>().Object;
                 var internalContext = new LazyInternalContext(
-                    context, new Mock<IInternalConnection>().Object, null, null, null, new Lazy<DbDispatchers>(() => mockDispatchers.Object));
+                    context, new Mock<IInternalConnection>().Object, null, null, null, null, new Lazy<DbDispatchers>(() => mockDispatchers.Object));
 
                 Action<string> sink = new StringWriter().Write;
                 internalContext.Log = sink;
@@ -412,7 +412,7 @@ namespace System.Data.Entity.Internal
 
                 var context = new Mock<DbContext>().Object;
                 var internalContext = new LazyInternalContext(
-                    context, new Mock<IInternalConnection>().Object, null, null, null, new Lazy<DbDispatchers>(() => mockDispatchers.Object));
+                    context, new Mock<IInternalConnection>().Object, null, null, null, null, new Lazy<DbDispatchers>(() => mockDispatchers.Object));
 
                 Action<string> sink = new StringWriter().Write;
                 internalContext.Log = sink;
@@ -440,7 +440,7 @@ namespace System.Data.Entity.Internal
 
                 var context = new Mock<DbContext>().Object;
                 var internalContext = new LazyInternalContext(
-                    context, new Mock<IInternalConnection>().Object, null, null, null, new Lazy<DbDispatchers>(() => mockDispatchers.Object));
+                    context, new Mock<IInternalConnection>().Object, null, null, null, null, new Lazy<DbDispatchers>(() => mockDispatchers.Object));
 
                 Action<string> sink = new StringWriter().Write;
                 internalContext.Log = sink;
@@ -458,7 +458,7 @@ namespace System.Data.Entity.Internal
 
                 var context = new Mock<DbContext>().Object;
                 var internalContext = new LazyInternalContext(
-                    context, new Mock<IInternalConnection>().Object, null, null, null, new Lazy<DbDispatchers>(() => mockDispatchers.Object));
+                    context, new Mock<IInternalConnection>().Object, null, null, null, null, new Lazy<DbDispatchers>(() => mockDispatchers.Object));
 
                 Assert.Null(internalContext.Log);
 
@@ -477,7 +477,7 @@ namespace System.Data.Entity.Internal
 
                 var context = new Mock<DbContext>().Object;
                 var internalContext = new LazyInternalContext(
-                    context, new Mock<IInternalConnection>().Object, null, null, null, new Lazy<DbDispatchers>(() => mockDispatchers.Object));
+                    context, new Mock<IInternalConnection>().Object, null, null, null, null, new Lazy<DbDispatchers>(() => mockDispatchers.Object));
 
                 Action<string> sink = new StringWriter().Write;
                 internalContext.Log = sink;
