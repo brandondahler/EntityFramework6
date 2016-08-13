@@ -18,11 +18,11 @@ namespace System.Data.Entity.Internal.Linq
         void Remove(object entity);
         void Initialize();
         void TryInitialize();
-        IEnumerator ExecuteSqlQuery(SqlQueryMappingBehavior sqlQueryMappingBehavior, string sql, bool asNoTracking, bool? streaming, object[] parameters);
+        IEnumerator ExecuteSqlQuery(bool honorColumnNameConfiguration, string sql, bool asNoTracking, bool? streaming, object[] parameters);
 
 #if !NET40
 
-        IDbAsyncEnumerator ExecuteSqlQueryAsync(SqlQueryMappingBehavior sqlQueryMappingBehavior, string sql, bool asNoTracking, bool? streaming, object[] parameters);
+        IDbAsyncEnumerator ExecuteSqlQueryAsync(bool honorColumnNameConfiguration, string sql, bool asNoTracking, bool? streaming, object[] parameters);
 
 #endif
     }

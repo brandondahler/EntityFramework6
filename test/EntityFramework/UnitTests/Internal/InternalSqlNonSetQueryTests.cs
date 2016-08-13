@@ -43,25 +43,25 @@ namespace System.Data.Entity.Internal
 
 #if !NET40
             VerifyMethod<string>(
-                e => e.GetAsyncEnumerator(), m => m.ExecuteSqlQueryAsync(typeof(string), SqlQueryMappingBehavior.MemberNameOnly, "foo", streaming ? true : (bool?)null, parameters),
-                SqlQueryMappingBehavior.MemberNameOnly, "foo", streaming, parameters);
+                e => e.GetAsyncEnumerator(), m => m.ExecuteSqlQueryAsync(typeof(string), false, "foo", streaming ? true : (bool?)null, parameters),
+                false, "foo", streaming, parameters);
 #endif
 
             VerifyMethod<string>(
-                e => e.GetEnumerator(), m => m.ExecuteSqlQuery(typeof(string), SqlQueryMappingBehavior.MemberNameOnly, "foo", streaming ? true : (bool?)null, parameters),
-                SqlQueryMappingBehavior.MemberNameOnly, "foo", streaming, parameters);
+                e => e.GetEnumerator(), m => m.ExecuteSqlQuery(typeof(string), false, "foo", streaming ? true : (bool?)null, parameters),
+                false, "foo", streaming, parameters);
         }
 
         internal void VerifyMethod<T>(
             Action<InternalSqlNonSetQuery> methodInvoke, Expression<Action<InternalContextForMock>> mockMethodInvoke,
-            SqlQueryMappingBehavior sqlQueryMappingBehavior, string sql, bool streaming, object[] parameters)
+            bool honorColumnNameConfiguration, string sql, bool streaming, object[] parameters)
             where T : class
         {
             Assert.NotNull(methodInvoke);
             Assert.NotNull(mockMethodInvoke);
 
             var internalContextMock = new Mock<InternalContextForMock>();
-            var sqlSetQuery = new InternalSqlNonSetQuery(internalContextMock.Object, typeof(T), sqlQueryMappingBehavior, sql, parameters);
+            var sqlSetQuery = new InternalSqlNonSetQuery(internalContextMock.Object, typeof(T), honorColumnNameConfiguration, sql, parameters);
             if (streaming)
             {
                 sqlSetQuery = (InternalSqlNonSetQuery)sqlSetQuery.AsStreaming();

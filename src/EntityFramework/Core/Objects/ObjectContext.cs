@@ -4275,7 +4275,7 @@ namespace System.Data.Entity.Core.Objects
         /// </returns>
         public virtual ObjectResult<TElement> ExecuteStoreQuery<TElement>(string commandText, params object[] parameters)
         {
-            return ExecuteStoreQuery<TElement>(SqlQueryMappingBehavior.MemberNameOnly, commandText, parameters);
+            return ExecuteStoreQuery<TElement>(false, commandText, parameters);
         }
 
         /// <summary>
@@ -4289,7 +4289,7 @@ namespace System.Data.Entity.Core.Objects
         /// context.ExecuteStoreQuery&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @author", new SqlParameter("@author", userSuppliedAuthor));
         /// </summary>
         /// <typeparam name="TElement"> The element type of the result sequence. </typeparam>
-        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="honorColumnNameConfiguration"> Determines whether to honor the column mapping configuration for this command. </param>
         /// <param name="commandText"> The query specified in the server's native query language. </param>
         /// <param name="parameters"> 
         /// The parameter values to use for the query. If output parameters are used, their values will not be 
@@ -4300,10 +4300,10 @@ namespace System.Data.Entity.Core.Objects
         /// An enumeration of objects of type <typeparamref name="TElement" /> .
         /// </returns>
         public virtual ObjectResult<TElement> ExecuteStoreQuery<TElement>(
-            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, params object[] parameters)
+            bool honorColumnNameConfiguration, string commandText, params object[] parameters)
         {
             return ExecuteStoreQueryReliably<TElement>(
-                sqlQueryMappingBehavior, commandText, /*entitySetName:*/null, ExecutionOptions.Default, parameters);
+                honorColumnNameConfiguration, commandText, /*entitySetName:*/null, ExecutionOptions.Default, parameters);
         }
 
         /// <summary>
@@ -4331,7 +4331,7 @@ namespace System.Data.Entity.Core.Objects
             string commandText, ExecutionOptions executionOptions, params object[] parameters)
         {
             return ExecuteStoreQuery<TElement>(
-                SqlQueryMappingBehavior.MemberNameOnly, commandText, executionOptions, parameters);
+                false, commandText, executionOptions, parameters);
         }
 
         /// <summary>
@@ -4345,7 +4345,7 @@ namespace System.Data.Entity.Core.Objects
         /// context.ExecuteStoreQuery&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @author", new SqlParameter("@author", userSuppliedAuthor));
         /// </summary>
         /// <typeparam name="TElement"> The element type of the result sequence. </typeparam>
-        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="honorColumnNameConfiguration"> Determines whether to honor the column mapping configuration for this command. </param>
         /// <param name="commandText"> The query specified in the server's native query language. </param>
         /// <param name="executionOptions"> The options for executing this query. </param>
         /// <param name="parameters"> 
@@ -4357,10 +4357,10 @@ namespace System.Data.Entity.Core.Objects
         /// An enumeration of objects of type <typeparamref name="TElement" /> .
         /// </returns>
         public virtual ObjectResult<TElement> ExecuteStoreQuery<TElement>(
-            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, ExecutionOptions executionOptions, params object[] parameters)
+            bool honorColumnNameConfiguration, string commandText, ExecutionOptions executionOptions, params object[] parameters)
         {
             return ExecuteStoreQueryReliably<TElement>(
-                sqlQueryMappingBehavior, commandText, /*entitySetName:*/null, executionOptions, parameters);
+                honorColumnNameConfiguration, commandText, /*entitySetName:*/null, executionOptions, parameters);
         }
 
         /// <summary>
@@ -4392,7 +4392,7 @@ namespace System.Data.Entity.Core.Objects
             string commandText, string entitySetName, MergeOption mergeOption, params object[] parameters)
         {
             return ExecuteStoreQuery<TElement>(
-                SqlQueryMappingBehavior.MemberNameOnly, commandText, entitySetName, mergeOption, parameters);
+                false, commandText, entitySetName, mergeOption, parameters);
         }
 
         /// <summary>
@@ -4406,7 +4406,7 @@ namespace System.Data.Entity.Core.Objects
         /// context.ExecuteStoreQuery&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @author", new SqlParameter("@author", userSuppliedAuthor));
         /// </summary>
         /// <typeparam name="TElement"> The element type of the result sequence. </typeparam>
-        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="honorColumnNameConfiguration"> Determines whether to honor the column mapping configuration for this command. </param>
         /// <param name="commandText"> The query specified in the server's native query language. </param>
         /// <param name="entitySetName">The entity set of the  TResult  type. If an entity set name is not provided, the results are not going to be tracked.</param>
         /// <param name="mergeOption">
@@ -4422,11 +4422,11 @@ namespace System.Data.Entity.Core.Objects
         /// An enumeration of objects of type <typeparamref name="TElement" /> .
         /// </returns>
         public virtual ObjectResult<TElement> ExecuteStoreQuery<TElement>(
-            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, string entitySetName, MergeOption mergeOption, params object[] parameters)
+            bool honorColumnNameConfiguration, string commandText, string entitySetName, MergeOption mergeOption, params object[] parameters)
         {
             Check.NotEmpty(entitySetName, "entitySetName");
             return ExecuteStoreQueryReliably<TElement>(
-                sqlQueryMappingBehavior, commandText, entitySetName, new ExecutionOptions(mergeOption), parameters);
+                honorColumnNameConfiguration, commandText, entitySetName, new ExecutionOptions(mergeOption), parameters);
         }
 
         /// <summary>
@@ -4455,7 +4455,7 @@ namespace System.Data.Entity.Core.Objects
             string commandText, string entitySetName, ExecutionOptions executionOptions, params object[] parameters)
         {
             return ExecuteStoreQuery<TElement>(
-                SqlQueryMappingBehavior.MemberNameOnly, commandText, entitySetName, executionOptions, parameters);
+                false, commandText, entitySetName, executionOptions, parameters);
         }
 
         /// <summary>
@@ -4469,7 +4469,7 @@ namespace System.Data.Entity.Core.Objects
         /// context.ExecuteStoreQuery&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @author", new SqlParameter("@author", userSuppliedAuthor));
         /// </summary>
         /// <typeparam name="TElement"> The element type of the result sequence. </typeparam>
-        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="honorColumnNameConfiguration"> Determines whether to honor the column mapping configuration for this command. </param>
         /// <param name="commandText"> The query specified in the server's native query language. </param>
         /// <param name="entitySetName">The entity set of the  TResult  type. If an entity set name is not provided, the results are not going to be tracked.</param>
         /// <param name="executionOptions"> The options for executing this query. </param>
@@ -4482,16 +4482,16 @@ namespace System.Data.Entity.Core.Objects
         /// An enumeration of objects of type <typeparamref name="TElement" /> .
         /// </returns>
         public virtual ObjectResult<TElement> ExecuteStoreQuery<TElement>(
-            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, string entitySetName, ExecutionOptions executionOptions, params object[] parameters)
+            bool honorColumnNameConfiguration, string commandText, string entitySetName, ExecutionOptions executionOptions, params object[] parameters)
         {
             Check.NotEmpty(entitySetName, "entitySetName");
-            return ExecuteStoreQueryReliably<TElement>(sqlQueryMappingBehavior, commandText, entitySetName, executionOptions, parameters);
+            return ExecuteStoreQueryReliably<TElement>(honorColumnNameConfiguration, commandText, entitySetName, executionOptions, parameters);
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "Buffer disposed by the returned ObjectResult")]
         private ObjectResult<TElement> ExecuteStoreQueryReliably<TElement>(
-            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, string entitySetName, ExecutionOptions executionOptions, params object[] parameters)
+            bool honorColumnNameConfiguration, string commandText, string entitySetName, ExecutionOptions executionOptions, params object[] parameters)
         {
             AsyncMonitor.EnsureNotEntered();
 
@@ -4521,14 +4521,14 @@ namespace System.Data.Entity.Core.Objects
             return executionStrategy.Execute(
                 () => ExecuteInTransaction(
                     () => ExecuteStoreQueryInternal<TElement>(
-                        sqlQueryMappingBehavior, commandText, entitySetName, executionOptions, parameters),
+                        honorColumnNameConfiguration, commandText, entitySetName, executionOptions, parameters),
                     executionStrategy, startLocalTransaction: false,
                     releaseConnectionOnSuccess: !executionOptions.UserSpecifiedStreaming.Value));
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed by ObjectResult")]
         private ObjectResult<TElement> ExecuteStoreQueryInternal<TElement>(
-            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, string entitySetName, ExecutionOptions executionOptions, params object[] parameters)
+            bool honorColumnNameConfiguration, string commandText, string entitySetName, ExecutionOptions executionOptions, params object[] parameters)
         {
             DbDataReader reader = null;
             DbCommand command = null;
@@ -4544,7 +4544,7 @@ namespace System.Data.Entity.Core.Objects
                         : CommandBehavior.SequentialAccess);
 
                 shaperFactory = InternalTranslate<TElement>(
-                    reader, sqlQueryMappingBehavior, entitySetName, executionOptions.MergeOption, executionOptions.UserSpecifiedStreaming.Value, out entitySet,
+                    reader, honorColumnNameConfiguration, entitySetName, executionOptions.MergeOption, executionOptions.UserSpecifiedStreaming.Value, out entitySet,
                     out edmType);
             }
             catch
@@ -4632,7 +4632,7 @@ namespace System.Data.Entity.Core.Objects
         [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
         public Task<ObjectResult<TElement>> ExecuteStoreQueryAsync<TElement>(string commandText, params object[] parameters)
         {
-            return ExecuteStoreQueryAsync<TElement>(SqlQueryMappingBehavior.MemberNameOnly, commandText, parameters);
+            return ExecuteStoreQueryAsync<TElement>(false, commandText, parameters);
         }
 
         /// <summary>
@@ -4650,7 +4650,7 @@ namespace System.Data.Entity.Core.Objects
         /// that any asynchronous operations have completed before calling another method on this context.
         /// </remarks>
         /// <typeparam name="TElement"> The element type of the result sequence. </typeparam>
-        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="honorColumnNameConfiguration"> Determines whether to honor the column mapping configuration for this command. </param>
         /// <param name="commandText"> The query specified in the server's native query language. </param>
         /// <param name="parameters"> 
         /// The parameter values to use for the query. If output parameters are used, their values will not be 
@@ -4662,9 +4662,9 @@ namespace System.Data.Entity.Core.Objects
         /// The task result contains an enumeration of objects of type <typeparamref name="TElement" /> .
         /// </returns>
         [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
-        public Task<ObjectResult<TElement>> ExecuteStoreQueryAsync<TElement>(SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, params object[] parameters)
+        public Task<ObjectResult<TElement>> ExecuteStoreQueryAsync<TElement>(bool honorColumnNameConfiguration, string commandText, params object[] parameters)
         {
-            return ExecuteStoreQueryAsync<TElement>(sqlQueryMappingBehavior, commandText, CancellationToken.None, parameters);
+            return ExecuteStoreQueryAsync<TElement>(honorColumnNameConfiguration, commandText, CancellationToken.None, parameters);
         }
 
         /// <summary>
@@ -4699,7 +4699,7 @@ namespace System.Data.Entity.Core.Objects
         public virtual Task<ObjectResult<TElement>> ExecuteStoreQueryAsync<TElement>(
             string commandText, CancellationToken cancellationToken, params object[] parameters)
         {
-            return ExecuteStoreQueryAsync<TElement>(SqlQueryMappingBehavior.MemberNameOnly, commandText, cancellationToken, parameters);
+            return ExecuteStoreQueryAsync<TElement>(false, commandText, cancellationToken, parameters);
         }
 
         /// <summary>
@@ -4717,7 +4717,7 @@ namespace System.Data.Entity.Core.Objects
         /// that any asynchronous operations have completed before calling another method on this context.
         /// </remarks>
         /// <typeparam name="TElement"> The element type of the result sequence. </typeparam>
-        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="honorColumnNameConfiguration"> Determines whether to honor the column mapping configuration for this command. </param>
         /// <param name="commandText"> The query specified in the server's native query language. </param>
         /// <param name="cancellationToken">
         /// A <see cref="CancellationToken" /> to observe while waiting for the task to complete.
@@ -4733,14 +4733,14 @@ namespace System.Data.Entity.Core.Objects
         /// </returns>
         [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
         public virtual Task<ObjectResult<TElement>> ExecuteStoreQueryAsync<TElement>(
-            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, CancellationToken cancellationToken, params object[] parameters)
+            bool honorColumnNameConfiguration, string commandText, CancellationToken cancellationToken, params object[] parameters)
         {
             AsyncMonitor.EnsureNotEntered();
 
             var executionStrategy = DbProviderServices.GetExecutionStrategy(Connection, MetadataWorkspace);
 
             return ExecuteStoreQueryReliablyAsync<TElement>(
-                sqlQueryMappingBehavior, commandText, /*entitySetName:*/null, ExecutionOptions.Default, cancellationToken, executionStrategy, parameters);
+                honorColumnNameConfiguration, commandText, /*entitySetName:*/null, ExecutionOptions.Default, cancellationToken, executionStrategy, parameters);
         }
 
         /// <summary>
@@ -4864,7 +4864,7 @@ namespace System.Data.Entity.Core.Objects
         /// that any asynchronous operations have completed before calling another method on this context.
         /// </remarks>
         /// <typeparam name="TElement"> The element type of the result sequence. </typeparam>
-        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="honorColumnNameConfiguration"> Determines whether to honor the column mapping configuration for this command. </param>
         /// <param name="commandText"> The query specified in the server's native query language. </param>
         /// <param name="executionOptions"> The options for executing this query. </param>
         /// <param name="cancellationToken">
@@ -4881,7 +4881,7 @@ namespace System.Data.Entity.Core.Objects
         /// </returns>
         [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
         public virtual Task<ObjectResult<TElement>> ExecuteStoreQueryAsync<TElement>(
-            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, ExecutionOptions executionOptions, CancellationToken cancellationToken, params object[] parameters)
+            bool honorColumnNameConfiguration, string commandText, ExecutionOptions executionOptions, CancellationToken cancellationToken, params object[] parameters)
         {
             AsyncMonitor.EnsureNotEntered();
 
@@ -4893,7 +4893,7 @@ namespace System.Data.Entity.Core.Objects
             }
 
             return ExecuteStoreQueryReliablyAsync<TElement>(
-                sqlQueryMappingBehavior, commandText, /*entitySetName:*/null, executionOptions, cancellationToken, executionStrategy, parameters);
+                honorColumnNameConfiguration, commandText, /*entitySetName:*/null, executionOptions, cancellationToken, executionStrategy, parameters);
         }
 
         /// <summary>
@@ -5021,7 +5021,7 @@ namespace System.Data.Entity.Core.Objects
         /// that any asynchronous operations have completed before calling another method on this context.
         /// </remarks>
         /// <typeparam name="TElement"> The element type of the result sequence. </typeparam>
-        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="honorColumnNameConfiguration"> Determines whether to honor the column mapping configuration for this command. </param>
         /// <param name="commandText"> The query specified in the server's native query language. </param>
         /// <param name="entitySetName">The entity set of the  TResult  type. If an entity set name is not provided, the results are not going to be tracked.</param>
         /// <param name="executionOptions"> The options for executing this query. </param>
@@ -5039,7 +5039,7 @@ namespace System.Data.Entity.Core.Objects
         /// </returns>
         [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
         public virtual Task<ObjectResult<TElement>> ExecuteStoreQueryAsync<TElement>(
-            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, string entitySetName, ExecutionOptions executionOptions, 
+            bool honorColumnNameConfiguration, string commandText, string entitySetName, ExecutionOptions executionOptions, 
             CancellationToken cancellationToken, params object[] parameters)
         {
             Check.NotEmpty(entitySetName, "entitySetName");
@@ -5053,11 +5053,11 @@ namespace System.Data.Entity.Core.Objects
             }
 
             return ExecuteStoreQueryReliablyAsync<TElement>(
-                sqlQueryMappingBehavior, commandText, entitySetName, executionOptions, cancellationToken, executionStrategy, parameters);
+                honorColumnNameConfiguration, commandText, entitySetName, executionOptions, cancellationToken, executionStrategy, parameters);
         }
 
         private async Task<ObjectResult<TElement>> ExecuteStoreQueryReliablyAsync<TElement>(
-            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, string entitySetName, ExecutionOptions executionOptions, 
+            bool honorColumnNameConfiguration, string commandText, string entitySetName, ExecutionOptions executionOptions, 
             CancellationToken cancellationToken, IDbExecutionStrategy executionStrategy, params object[] parameters)
         {
             if (executionOptions.MergeOption != MergeOption.NoTracking)
@@ -5084,7 +5084,7 @@ namespace System.Data.Entity.Core.Objects
                 return await executionStrategy.ExecuteAsync(
                     () => ExecuteInTransactionAsync(
                         () => ExecuteStoreQueryInternalAsync<TElement>(
-                            sqlQueryMappingBehavior, commandText, entitySetName, executionOptions, cancellationToken, parameters),
+                            honorColumnNameConfiguration, commandText, entitySetName, executionOptions, cancellationToken, parameters),
                         executionStrategy,
                         /*startLocalTransaction:*/ false, /*releaseConnectionOnSuccess:*/ !executionOptions.UserSpecifiedStreaming.Value,
                         cancellationToken),
@@ -5100,7 +5100,7 @@ namespace System.Data.Entity.Core.Objects
         }
 
         private async Task<ObjectResult<TElement>> ExecuteStoreQueryInternalAsync<TElement>(
-            SqlQueryMappingBehavior sqlQueryMappingBehavior, string commandText, string entitySetName, ExecutionOptions executionOptions,
+            bool honorColumnNameConfiguration, string commandText, string entitySetName, ExecutionOptions executionOptions,
             CancellationToken cancellationToken, params object[] parameters)
         {
             DbDataReader reader = null;
@@ -5118,7 +5118,7 @@ namespace System.Data.Entity.Core.Objects
                     cancellationToken).WithCurrentCulture();
 
                 shaperFactory = InternalTranslate<TElement>(
-                    reader, sqlQueryMappingBehavior, entitySetName, executionOptions.MergeOption, executionOptions.UserSpecifiedStreaming.Value, out entitySet,
+                    reader, honorColumnNameConfiguration, entitySetName, executionOptions.MergeOption, executionOptions.UserSpecifiedStreaming.Value, out entitySet,
                     out edmType);
             }
             catch
@@ -5186,7 +5186,7 @@ namespace System.Data.Entity.Core.Objects
         /// <exception cref="T:System.ArgumentNullException">When  reader  is null.</exception>
         public virtual ObjectResult<TElement> Translate<TElement>(DbDataReader reader)
         {
-            return Translate<TElement>(reader, SqlQueryMappingBehavior.MemberNameOnly);
+            return Translate<TElement>(reader, false);
         }
 
         /// <summary>
@@ -5197,9 +5197,9 @@ namespace System.Data.Entity.Core.Objects
         /// <param name="reader">
         /// The <see cref="T:System.Data.Common.DbDataReader" /> that contains entity data to translate into entity objects.
         /// </param>
-        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="honorColumnNameConfiguration"> Determines whether to honor the column mapping configuration for this command. </param>
         /// <exception cref="T:System.ArgumentNullException">When  reader  is null.</exception>
-        public virtual ObjectResult<TElement> Translate<TElement>(DbDataReader reader, SqlQueryMappingBehavior sqlQueryMappingBehavior)
+        public virtual ObjectResult<TElement> Translate<TElement>(DbDataReader reader, bool honorColumnNameConfiguration)
         {
             // Ensure the assembly containing the entity's CLR type
             // is loaded into the workspace. If the schema types are not loaded
@@ -5214,7 +5214,7 @@ namespace System.Data.Entity.Core.Objects
             EntitySet entitySet;
             TypeUsage edmType;
             var shaperFactory = InternalTranslate<TElement>(
-                reader, sqlQueryMappingBehavior, /*entitySetName:*/ null, MergeOption.AppendOnly, /*streaming:*/ false, out entitySet, out edmType);
+                reader, honorColumnNameConfiguration, /*entitySetName:*/ null, MergeOption.AppendOnly, /*streaming:*/ false, out entitySet, out edmType);
             return ShapeResult(
                 reader, MergeOption.AppendOnly, /*readerOwned:*/ false, /*streaming:*/ false, shaperFactory, entitySet, edmType);
         }
@@ -5243,7 +5243,7 @@ namespace System.Data.Entity.Core.Objects
             Justification = "Generic parameters are required for strong-typing of the return type.")]
         public virtual ObjectResult<TEntity> Translate<TEntity>(DbDataReader reader, string entitySetName, MergeOption mergeOption)
         {
-            return Translate<TEntity>(reader, SqlQueryMappingBehavior.MemberNameOnly, entitySetName, mergeOption);
+            return Translate<TEntity>(reader, false, entitySetName, mergeOption);
         }
 
         /// <summary>
@@ -5254,7 +5254,7 @@ namespace System.Data.Entity.Core.Objects
         /// <param name="reader">
         /// The <see cref="T:System.Data.Common.DbDataReader" /> that contains entity data to translate into entity objects.
         /// </param>
-        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="honorColumnNameConfiguration"> Determines whether to honor the column mapping configuration for this command. </param>
         /// <param name="entitySetName">The entity set of the  TResult  type.</param>
         /// <param name="mergeOption">
         /// The <see cref="T:System.Data.Entity.Core.Objects.MergeOption" /> to use when translated objects are added to the object context. The default is
@@ -5269,7 +5269,7 @@ namespace System.Data.Entity.Core.Objects
         /// <exception cref="T:System.InvalidOperationException">When the supplied  entitySetName  is not a valid entity set for the  TResult  type. </exception>
         [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter",
             Justification = "Generic parameters are required for strong-typing of the return type.")]
-        public virtual ObjectResult<TEntity> Translate<TEntity>(DbDataReader reader, SqlQueryMappingBehavior sqlQueryMappingBehavior, string entitySetName, MergeOption mergeOption)
+        public virtual ObjectResult<TEntity> Translate<TEntity>(DbDataReader reader, bool honorColumnNameConfiguration, string entitySetName, MergeOption mergeOption)
         {
             Check.NotEmpty(entitySetName, "entitySetName");
 
@@ -5286,7 +5286,7 @@ namespace System.Data.Entity.Core.Objects
             EntitySet entitySet;
             TypeUsage edmType;
             var shaperFactory = InternalTranslate<TEntity>(
-                reader, sqlQueryMappingBehavior, entitySetName, mergeOption, /*streaming:*/ false, out entitySet, out edmType);
+                reader, honorColumnNameConfiguration, entitySetName, mergeOption, /*streaming:*/ false, out entitySet, out edmType);
             return ShapeResult(
                 reader, mergeOption, /*readerOwned:*/ false, /*streaming:*/ false, shaperFactory, entitySet, edmType);
         }
@@ -5294,7 +5294,7 @@ namespace System.Data.Entity.Core.Objects
 
         [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
         private ShaperFactory<TElement> InternalTranslate<TElement>(
-            DbDataReader reader, SqlQueryMappingBehavior sqlQueryMappingBehavior, string entitySetName, MergeOption mergeOption, bool streaming, out EntitySet entitySet, out TypeUsage edmType)
+            DbDataReader reader, bool honorColumnNameConfiguration, string entitySetName, MergeOption mergeOption, bool streaming, out EntitySet entitySet, out TypeUsage edmType)
         {
             DebugCheck.NotNull(reader);
             EntityUtil.CheckArgumentMergeOption(mergeOption);
@@ -5321,35 +5321,12 @@ namespace System.Data.Entity.Core.Objects
                             entitySet.EntityContainer.Name,
                             entitySet.Name, typeof(TElement)));
                 }
-
-
                 
-                var renameList = new Dictionary<string, FunctionImportReturnTypeStructuralTypeColumnRenameMapping>();
-
-                // Build rename list if type is an entity type
-                var entityType = modelEdmType as EntityType;
-                if (entityType != null)
-                {
-                    foreach (var property in entityType.Properties)
-                    {
-                        var configuration = property.GetConfiguration() as PrimitivePropertyConfiguration;
-
-                        if (configuration != null && !string.IsNullOrEmpty(configuration.ColumnName))
-                        {
-                            var mapping = new FunctionImportReturnTypeStructuralTypeColumnRenameMapping(property.Name);
-                            mapping.AddRename(new FunctionImportReturnTypeStructuralTypeColumn(configuration.ColumnName, entityType, false, null));
-
-                            renameList.Add(property.Name, mapping);
-                        }
-                    }
-                }
-
-
-                columnMap = _columnMapFactory.CreateColumnMapFromReaderAndType(reader, sqlQueryMappingBehavior, modelEdmType, entitySet, renameList);
+                columnMap = _columnMapFactory.CreateColumnMapFromReaderAndType(reader, honorColumnNameConfiguration, modelEdmType, entitySet, null);
             }
             else
             {
-                columnMap = _columnMapFactory.CreateColumnMapFromReaderAndClrType(reader, typeof(TElement), MetadataWorkspace);
+                columnMap = _columnMapFactory.CreateColumnMapFromReaderAndClrType(reader, honorColumnNameConfiguration, typeof(TElement), MetadataWorkspace);
             }
 
             edmType = columnMap.Type;

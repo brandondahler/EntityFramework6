@@ -2,6 +2,9 @@
 
 namespace System.Data.Entity.Core.Query.InternalTrees
 {
+    using ComponentModel.DataAnnotations.Schema;
+    using ModelConfiguration.Configuration.Properties.Primitive;
+    using ModelConfiguration.Edm;
     using System.Collections.Generic;
     using System.Data.Common;
     using System.Data.Entity.Core.Common;
@@ -37,7 +40,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
                 Debug.Assert(!baseStructuralType.Abstract, "mapping loader must verify abstract types have explicit mapping");
 
                 return CreateColumnMapFromReaderAndType(
-                    storeDataReader, SqlQueryMappingBehavior.ColumnAliasOnly, baseStructuralType, entitySet, resultMapping.ReturnTypeColumnsRenameMapping);
+                    storeDataReader, true, baseStructuralType, entitySet, resultMapping.ReturnTypeColumnsRenameMapping);
             }
 
             // the section below deals with the polymorphic entity type mapping for return type
@@ -54,7 +57,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
             ColumnMap[] baseTypeColumnMaps = null;
             foreach (var entityType in mappedEntityTypes)
             {
-                var propertyColumnMaps = GetColumnMapsForType(storeDataReader, SqlQueryMappingBehavior.ColumnAliasOnly, entityType, resultMapping.ReturnTypeColumnsRenameMapping);
+                var propertyColumnMaps = GetColumnMapsForType(storeDataReader, true, entityType, resultMapping.ReturnTypeColumnsRenameMapping);
                 var entityColumnMap = CreateEntityTypeElementColumnMap(
                     storeDataReader, entityType, entitySet, propertyColumnMaps, resultMapping.ReturnTypeColumnsRenameMapping);
                 if (!entityType.Abstract)
@@ -81,7 +84,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // Build the collectionColumnMap from a store datareader, a type and an entitySet.
         // </summary>
         internal virtual CollectionColumnMap CreateColumnMapFromReaderAndType(
-            DbDataReader storeDataReader, SqlQueryMappingBehavior sqlQueryMappingBehavior, EdmType edmType, EntitySet entitySet,
+            DbDataReader storeDataReader, bool honorColumnNameConfiguration, EdmType edmType, EntitySet entitySet,
             Dictionary<string, FunctionImportReturnTypeStructuralTypeColumnRenameMapping> renameList)
         {
             Debug.Assert(
@@ -89,7 +92,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
                 "The specified non-null EntitySet is incompatible with the EDM type specified.");
 
             // Next, build the ColumnMap directly from the edmType and entitySet provided.
-            var propertyColumnMaps = GetColumnMapsForType(storeDataReader, sqlQueryMappingBehavior, edmType, renameList);
+            var propertyColumnMaps = GetColumnMapsForType(storeDataReader, honorColumnNameConfiguration, edmType, renameList);
             ColumnMap elementColumnMap = null;
 
             // NOTE: We don't have a null sentinel here, because the stored proc won't 
@@ -134,7 +137,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters",
             MessageId = "System.Data.Entity.Core.Query.PlanCompiler.PlanCompiler.Assert(System.Boolean,System.String)")]
         internal virtual CollectionColumnMap CreateColumnMapFromReaderAndClrType(
-            DbDataReader reader, Type type, MetadataWorkspace workspace)
+            DbDataReader reader, bool honorColumnNameConfiguration, Type type, MetadataWorkspace workspace)
         {
             DebugCheck.NotNull(reader);
             DebugCheck.NotNull(type);
@@ -157,10 +160,23 @@ namespace System.Data.Entity.Core.Query.InternalTrees
                 var propertyUnderlyingType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
                 var propType = propertyUnderlyingType.IsEnum() ? propertyUnderlyingType.GetEnumUnderlyingType() : prop.PropertyType;
 
+                var propName = prop.Name;
+
+                if (honorColumnNameConfiguration)
+                {
+                    var columnAttribute = prop.GetCustomAttribute<ColumnAttribute>();
+
+                    if (columnAttribute != null && !string.IsNullOrEmpty(columnAttribute.Name))
+                    {
+                        propName = columnAttribute.Name;
+                    }
+                }
+
+
                 EdmType modelType;
                 int ordinal;
 
-                if (TryGetColumnOrdinalFromReader(reader, prop.Name, out ordinal)
+                if (TryGetColumnOrdinalFromReader(reader, propName, out ordinal)
                     && workspace.TryDetermineCSpaceModelType(propType, out modelType)
                     && (Helper.IsScalarType(modelType))
                     && prop.CanWriteExtended()
@@ -171,7 +187,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
                         Tuple.Create(
                             Expression.Bind(prop, Expression.Parameter(prop.PropertyType, "placeholder")),
                             ordinal,
-                            new EdmProperty(prop.Name, TypeUsage.Create(modelType))));
+                            new EdmProperty(propName, TypeUsage.Create(modelType))));
                 }
             }
             // initialize members in the order in which they appear in the reader
@@ -251,7 +267,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
             var keyMemberIndex = 0;
             foreach (var keyMember in keyMembers)
             {
-                var keyOrdinal = GetMemberOrdinalFromReader(storeDataReader, SqlQueryMappingBehavior.ColumnAliasOnly, keyMember, edmType, renameList);
+                var keyOrdinal = GetMemberOrdinalFromReader(storeDataReader, true, keyMember, edmType, renameList);
 
                 Debug.Assert(keyOrdinal >= 0, "keyMember for entity is not found by name in the data reader?");
 
@@ -274,7 +290,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // by ordinal position.
         // </summary>
         private static ColumnMap[] GetColumnMapsForType(
-            DbDataReader storeDataReader, SqlQueryMappingBehavior sqlQueryMappingBehavior, EdmType edmType,
+            DbDataReader storeDataReader, bool honorColumnNameConfiguration, EdmType edmType,
             Dictionary<string, FunctionImportReturnTypeStructuralTypeColumnRenameMapping> renameList)
         {
             // First get the list of properties; NOTE: we need to hook up the column by name, 
@@ -291,8 +307,8 @@ namespace System.Data.Entity.Core.Query.InternalTrees
                         Strings.ADP_InvalidDataReaderUnableToMaterializeNonScalarType(member.Name, member.TypeUsage.EdmType.FullName));
                 }
 
-                var ordinal = GetMemberOrdinalFromReader(storeDataReader, sqlQueryMappingBehavior, member, edmType, renameList);
-
+                var ordinal = GetMemberOrdinalFromReader(storeDataReader, honorColumnNameConfiguration, member, edmType, renameList);
+                
                 propertyColumnMaps[index] = new ScalarColumnMap(member.TypeUsage, member.Name, 0, ordinal);
                 index++;
             }
@@ -327,56 +343,31 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // in the datareader with the name of the member.
         // </summary>
         private static int GetMemberOrdinalFromReader(
-            DbDataReader storeDataReader, SqlQueryMappingBehavior sqlQueryMappingBehavior, EdmMember member, EdmType currentType,
+            DbDataReader storeDataReader, bool honorColumnNameConfiguration, EdmMember member, EdmType currentType,
             Dictionary<string, FunctionImportReturnTypeStructuralTypeColumnRenameMapping> renameList)
         {
             int result;
             var memberName = member.Name;
-            var renamedMemberName = GetRenameForMember(member, currentType, renameList);
-            var columnMissing = false;
+            
 
-            switch (sqlQueryMappingBehavior)
+            if (honorColumnNameConfiguration)
             {
-                case SqlQueryMappingBehavior.MemberNameOnly:
-                    if (!TryGetColumnOrdinalFromReader(storeDataReader, memberName, out result))
-                    {
-                        columnMissing = true;
-                    }
+                var property = member as EdmProperty;
 
-                    break;
+                if (property != null)
+                {
+                    var configuration = property.GetConfiguration() as PrimitivePropertyConfiguration;
 
-                case SqlQueryMappingBehavior.ColumnAliasFallback:
-                    if (!TryGetColumnOrdinalFromReader(storeDataReader, memberName, out result) &&
-                        !TryGetColumnOrdinalFromReader(storeDataReader, renamedMemberName, out result))
-                    {
-                        columnMissing = true;
-                    }
+                    if (configuration != null && !string.IsNullOrEmpty(configuration.ColumnName))
+                        memberName = configuration.ColumnName;
+                }
 
-                    break;
-
-                case SqlQueryMappingBehavior.ColumnAliasOnly:
-                    if (!TryGetColumnOrdinalFromReader(storeDataReader, renamedMemberName, out result))
-                    {
-                        columnMissing = true;
-                    }
-
-                    break;
-
-                case SqlQueryMappingBehavior.MemberNameFallback:
-                    if (!TryGetColumnOrdinalFromReader(storeDataReader, renamedMemberName, out result) && 
-                        !TryGetColumnOrdinalFromReader(storeDataReader, memberName, out result))
-                    {
-                        columnMissing = true;
-                    }
-
-                    break;
-
-                default:
-                    throw Error.ADP_InvalidSqlQueryMappingBehavior();
             }
 
+            memberName = GetRenameForMember(memberName, currentType, renameList);
 
-            if (columnMissing)
+
+            if (!TryGetColumnOrdinalFromReader(storeDataReader, memberName, out result))
             {
                 throw new EntityCommandExecutionException(
                     Strings.ADP_InvalidDataReaderMissingColumnForType(
@@ -387,16 +378,16 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         }
 
         private static string GetRenameForMember(
-            EdmMember member, EdmType currentType, Dictionary<string, FunctionImportReturnTypeStructuralTypeColumnRenameMapping> renameList)
+            string memberName, EdmType currentType, Dictionary<string, FunctionImportReturnTypeStructuralTypeColumnRenameMapping> renameList)
         {
             // if list is null,
             // or no rename mapping at all,
             // or partial rename and the member is not specified by the renaming
             // then we return the original member.Name
             // otherwise we return the mapped one
-            return renameList == null || renameList.Count == 0 || !renameList.Any(m => m.Key == member.Name)
-                       ? member.Name
-                       : renameList[member.Name].GetRename(currentType);
+            return renameList == null || renameList.Count == 0 || !renameList.Any(m => m.Key == memberName)
+                       ? memberName
+                       : renameList[memberName].GetRename(currentType);
         }
 
         // <summary>

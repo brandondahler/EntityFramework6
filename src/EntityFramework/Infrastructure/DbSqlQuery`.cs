@@ -32,7 +32,7 @@ namespace System.Data.Entity.Infrastructure
         /// <summary>
         /// Creates an instance of a <see cref="DbSqlQuery{TEntity}" /> when called from the constructor of a derived
         /// type that will be used as a test double for <see cref="DbSet{TEntity}.SqlQuery(string, object[])" /> and 
-        /// <see cref="DbSet{TEntity}.SqlQuery(SqlQueryMappingBehavior, string, object[])" />. Methods and properties
+        /// <see cref="DbSet{TEntity}.SqlQuery(bool, string, object[])" />. Methods and properties
         /// that will be used by the test double must be implemented by the test double except AsNoTracking and
         /// AsStreaming where the default implementation is a no-op.
         /// </summary>

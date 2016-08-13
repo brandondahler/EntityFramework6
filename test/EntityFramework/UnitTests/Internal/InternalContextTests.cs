@@ -175,16 +175,16 @@ namespace System.Data.Entity.Internal
                     }.Object;
                 var objectContextMock = Mock.Get(internalContext.ObjectContext);
                 objectContextMock.Setup(
-                    m => m.ExecuteStoreQuery<Random>(It.IsAny<SqlQueryMappingBehavior>(), It.IsAny<string>(), It.IsAny<ExecutionOptions>(), It.IsAny<object[]>()))
+                    m => m.ExecuteStoreQuery<Random>(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<ExecutionOptions>(), It.IsAny<object[]>()))
                     .Returns(
                         Core.Objects.MockHelper.CreateMockObjectQuery(new Random())
                             .Object.Execute(MergeOption.AppendOnly));
 
-                var results = internalContext.ExecuteSqlQuery<Random>(SqlQueryMappingBehavior.MemberNameOnly, "sql", streaming, new object[] { "param" });
+                var results = internalContext.ExecuteSqlQuery<Random>(false, "sql", streaming, new object[] { "param" });
 
                 objectContextMock.Verify(
                     m => m.ExecuteStoreQuery<Random>(
-                        SqlQueryMappingBehavior.MemberNameOnly, "sql",
+                        false, "sql",
                         new ExecutionOptions(MergeOption.AppendOnly, streaming), new object[] { "param" }),
                     Times.Never());
 
@@ -192,7 +192,7 @@ namespace System.Data.Entity.Internal
 
                 objectContextMock.Verify(
                     m => m.ExecuteStoreQuery<Random>(
-                        SqlQueryMappingBehavior.MemberNameOnly, "sql",
+                        false, "sql",
                         new ExecutionOptions(MergeOption.AppendOnly, streaming), new object[] { "param" }),
                     Times.Once());
             }
@@ -217,16 +217,16 @@ namespace System.Data.Entity.Internal
                     }.Object;
                 var objectContextMock = Mock.Get(internalContext.ObjectContext);
                 objectContextMock.Setup(
-                    m => m.ExecuteStoreQuery<Random>(It.IsAny<SqlQueryMappingBehavior>(), It.IsAny<string>(), It.IsAny<ExecutionOptions>(), It.IsAny<object[]>()))
+                    m => m.ExecuteStoreQuery<Random>(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<ExecutionOptions>(), It.IsAny<object[]>()))
                     .Returns(
                         Core.Objects.MockHelper.CreateMockObjectQuery(new Random())
                             .Object.Execute(MergeOption.AppendOnly));
 
-                var results = internalContext.ExecuteSqlQuery(typeof(Random), SqlQueryMappingBehavior.MemberNameOnly, "sql", streaming, new object[] { "param" });
+                var results = internalContext.ExecuteSqlQuery(typeof(Random), false, "sql", streaming, new object[] { "param" });
 
                 objectContextMock.Verify(
                     m => m.ExecuteStoreQuery<Random>(
-                        SqlQueryMappingBehavior.MemberNameOnly, "sql",
+                        false, "sql",
                         new ExecutionOptions(MergeOption.AppendOnly, streaming), new object[] { "param" }),
                     Times.Never());
 
@@ -234,7 +234,7 @@ namespace System.Data.Entity.Internal
 
                 objectContextMock.Verify(
                     m => m.ExecuteStoreQuery<Random>(
-                        SqlQueryMappingBehavior.MemberNameOnly, "sql",
+                        false, "sql",
                         new ExecutionOptions(MergeOption.AppendOnly, streaming), new object[] { "param" }),
                     Times.Once());
             }
@@ -263,16 +263,16 @@ namespace System.Data.Entity.Internal
                 objectContextMock.Setup(
                     m =>
                     m.ExecuteStoreQueryAsync<Random>(
-                        It.IsAny<SqlQueryMappingBehavior>(), It.IsAny<string>(), It.IsAny<ExecutionOptions>(), It.IsAny<CancellationToken>(), It.IsAny<object[]>()))
+                        It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<ExecutionOptions>(), It.IsAny<CancellationToken>(), It.IsAny<object[]>()))
                     .Returns(
                         Core.Objects.MockHelper.CreateMockObjectQuery(new Random())
                             .Object.ExecuteAsync(MergeOption.AppendOnly));
 
-                var results = internalContext.ExecuteSqlQueryAsync<Random>(SqlQueryMappingBehavior.MemberNameOnly, "sql", streaming, new object[] { "param" });
+                var results = internalContext.ExecuteSqlQueryAsync<Random>(false, "sql", streaming, new object[] { "param" });
 
                 objectContextMock.Verify(
                     m => m.ExecuteStoreQueryAsync<Random>(
-                        SqlQueryMappingBehavior.MemberNameOnly, "sql",
+                        false, "sql",
                         new ExecutionOptions(MergeOption.AppendOnly, streaming), CancellationToken.None, new object[] { "param" }),
                     Times.Never());
 
@@ -280,7 +280,7 @@ namespace System.Data.Entity.Internal
 
                 objectContextMock.Verify(
                     m => m.ExecuteStoreQueryAsync<Random>(
-                        SqlQueryMappingBehavior.MemberNameOnly, "sql",
+                        false, "sql",
                         new ExecutionOptions(MergeOption.AppendOnly, streaming), CancellationToken.None, new object[] { "param" }),
                     Times.Once());
             }
@@ -307,17 +307,17 @@ namespace System.Data.Entity.Internal
                 objectContextMock.Setup(
                     m =>
                     m.ExecuteStoreQueryAsync<Random>(
-                        It.IsAny<SqlQueryMappingBehavior>(), It.IsAny<string>(), It.IsAny<ExecutionOptions>(), 
+                        It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<ExecutionOptions>(), 
                         It.IsAny<CancellationToken>(), It.IsAny<object[]>()))
                     .Returns(
                         Core.Objects.MockHelper.CreateMockObjectQuery(new Random())
                             .Object.ExecuteAsync(MergeOption.AppendOnly));
 
-                var results = internalContext.ExecuteSqlQueryAsync(typeof(Random), SqlQueryMappingBehavior.MemberNameOnly, "sql", streaming, new object[] { "param" });
+                var results = internalContext.ExecuteSqlQueryAsync(typeof(Random), false, "sql", streaming, new object[] { "param" });
 
                 objectContextMock.Verify(
                     m => m.ExecuteStoreQueryAsync<Random>(
-                        SqlQueryMappingBehavior.MemberNameOnly, "sql",
+                        false, "sql",
                         new ExecutionOptions(MergeOption.AppendOnly, streaming), CancellationToken.None, new object[] { "param" }),
                     Times.Never());
 
@@ -325,7 +325,7 @@ namespace System.Data.Entity.Internal
 
                 objectContextMock.Verify(
                     m => m.ExecuteStoreQueryAsync<Random>(
-                        SqlQueryMappingBehavior.MemberNameOnly, "sql",
+                        false, "sql",
                         new ExecutionOptions(MergeOption.AppendOnly, streaming), CancellationToken.None, new object[] { "param" }),
                     Times.Once());
             }

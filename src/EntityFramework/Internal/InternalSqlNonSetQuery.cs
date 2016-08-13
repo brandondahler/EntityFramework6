@@ -22,13 +22,13 @@ namespace System.Data.Entity.Internal
         // </summary>
         // <param name="internalContext"> The internal context. </param>
         // <param name="elementType"> Type of the element. </param>
-        // <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        // <param name="honorColumnNameConfiguration"> Determines whether to honor the column mapping configuration for this command. </param>
         // <param name="sql"> The SQL. </param>
         // <param name="parameters"> The parameters. </param>
-        internal InternalSqlNonSetQuery(InternalContext internalContext, Type elementType, SqlQueryMappingBehavior sqlQueryMappingBehavior, string sql, object[] parameters) : this(internalContext, elementType, sqlQueryMappingBehavior, sql, /*streaming:*/ null, parameters) { }
+        internal InternalSqlNonSetQuery(InternalContext internalContext, Type elementType, bool honorColumnNameConfiguration, string sql, object[] parameters) : this(internalContext, elementType, honorColumnNameConfiguration, sql, /*streaming:*/ null, parameters) { }
 
-        private InternalSqlNonSetQuery(InternalContext internalContext, Type elementType, SqlQueryMappingBehavior sqlQueryMappingBehavior, string sql, bool? streaming, object[] parameters)
-            : base(sqlQueryMappingBehavior, sql, streaming, parameters)
+        private InternalSqlNonSetQuery(InternalContext internalContext, Type elementType, bool honorColumnNameConfiguration, string sql, bool? streaming, object[] parameters)
+            : base(honorColumnNameConfiguration, sql, streaming, parameters)
         {
             DebugCheck.NotNull(internalContext);
             DebugCheck.NotNull(elementType);
@@ -59,7 +59,7 @@ namespace System.Data.Entity.Internal
         {
             return Streaming.HasValue && Streaming.Value
                        ? this
-                       : new InternalSqlNonSetQuery(_internalContext, _elementType, SqlQueryMappingBehavior, Sql, /*streaming:*/ true, Parameters);
+                       : new InternalSqlNonSetQuery(_internalContext, _elementType, HonorColumnNameConfiguration, Sql, /*streaming:*/ true, Parameters);
         }
 
         #endregion
@@ -73,7 +73,7 @@ namespace System.Data.Entity.Internal
         // <returns> The query results. </returns>
         public override IEnumerator GetEnumerator()
         {
-            return _internalContext.ExecuteSqlQuery(_elementType, SqlQueryMappingBehavior, Sql, Streaming, Parameters);
+            return _internalContext.ExecuteSqlQuery(_elementType, HonorColumnNameConfiguration, Sql, Streaming, Parameters);
         }
 
         #endregion
@@ -89,7 +89,7 @@ namespace System.Data.Entity.Internal
         // <returns> The query results. </returns>
         public override IDbAsyncEnumerator GetAsyncEnumerator()
         {
-            return _internalContext.ExecuteSqlQueryAsync(_elementType, SqlQueryMappingBehavior, Sql, Streaming, Parameters);
+            return _internalContext.ExecuteSqlQueryAsync(_elementType, HonorColumnNameConfiguration, Sql, Streaming, Parameters);
         }
 
 #endif

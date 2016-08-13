@@ -53,7 +53,7 @@ namespace ProductivityApiTests
                 var mappedEntity = context.MappedEntities.First();
 
                 var mappedEntityFromSqlQuery = objectContext.ExecuteStoreQuery<MappedEntity>(
-                        SqlQueryMappingBehavior.MemberNameOnly,
+                        false,
                         "SELECT Id, RemappedColumn AS MappedColumn, UnmappedColumn FROM MappedEntities;")
                     .First();
 
@@ -63,39 +63,12 @@ namespace ProductivityApiTests
 
                 Assert.Throws<EntityCommandExecutionException>(() =>
                     objectContext.ExecuteStoreQuery<MappedEntity>(
-                            SqlQueryMappingBehavior.MemberNameOnly,
+                            false,
                             "SELECT Id, RemappedColumn, UnmappedColumn FROM MappedEntities;")
                         .First());
             }
         }
-
-        [Fact]
-        public void ObjectContext_ExecuteStoreQuery_ColumnAliasFallback()
-        {
-            using (var context = new SqlQueryMappedContext())
-            {
-                var objectContext = ((IObjectContextAdapter)context).ObjectContext;
-                var mappedEntity = context.MappedEntities.First();
-                var sqls = new[] {
-                    "SELECT Id, RemappedColumn AS MappedColumn, UnmappedColumn FROM MappedEntities;",
-                    "SELECT Id, RemappedColumn, UnmappedColumn FROM MappedEntities;"
-                };
-
-                foreach (var sql in sqls)
-                {
-                    var mappedEntityFromSqlQuery = objectContext.ExecuteStoreQuery<MappedEntity>(
-                            SqlQueryMappingBehavior.ColumnAliasFallback,
-                            sql)
-                        .First();
-
-                    Assert.Equal(mappedEntity.Id, mappedEntityFromSqlQuery.Id);
-                    Assert.Equal(mappedEntity.MappedColumn, mappedEntityFromSqlQuery.MappedColumn);
-                    Assert.Equal(mappedEntity.UnmappedColumn, mappedEntityFromSqlQuery.UnmappedColumn);
-                }
-            }
-        }
-
-
+        
         [Fact]
         public void ObjectContext_ExecuteStoreQuery_ColumnAliasOnly()
         {
@@ -105,7 +78,7 @@ namespace ProductivityApiTests
                 var mappedEntity = context.MappedEntities.First();
 
                 var mappedEntityFromSqlQuery = objectContext.ExecuteStoreQuery<MappedEntity>(
-                        SqlQueryMappingBehavior.ColumnAliasOnly,
+                        true,
                         "SELECT Id, RemappedColumn, UnmappedColumn FROM MappedEntities;")
                     .First();
 
@@ -115,38 +88,12 @@ namespace ProductivityApiTests
 
                 Assert.Throws<EntityCommandExecutionException>(() =>
                     objectContext.ExecuteStoreQuery<MappedEntity>(
-                            SqlQueryMappingBehavior.ColumnAliasOnly,
+                            true,
                             "SELECT Id, RemappedColumn AS MappedColumn, UnmappedColumn FROM MappedEntities;")
                         .First());
             }
         }
-
-        [Fact]
-        public void ObjectContext_ExecuteStoreQuery_MemberNameFallback()
-        {
-            using (var context = new SqlQueryMappedContext())
-            {
-                var objectContext = ((IObjectContextAdapter)context).ObjectContext;
-                var mappedEntity = context.MappedEntities.First();
-                var sqls = new[] {
-                    "SELECT Id, RemappedColumn, UnmappedColumn FROM MappedEntities;",
-                    "SELECT Id, RemappedColumn AS MappedColumn, UnmappedColumn FROM MappedEntities;"
-                };
-
-                foreach (var sql in sqls)
-                {
-                    var mappedEntityFromSqlQuery = objectContext.ExecuteStoreQuery<MappedEntity>(
-                            SqlQueryMappingBehavior.MemberNameFallback,
-                            sql)
-                        .First();
-
-                    Assert.Equal(mappedEntity.Id, mappedEntityFromSqlQuery.Id);
-                    Assert.Equal(mappedEntity.MappedColumn, mappedEntityFromSqlQuery.MappedColumn);
-                    Assert.Equal(mappedEntity.UnmappedColumn, mappedEntityFromSqlQuery.UnmappedColumn);
-                }
-            }
-        }
-
+        
         #endregion
 
         #region Async
@@ -190,7 +137,7 @@ namespace ProductivityApiTests
                 var mappedEntity = context.MappedEntities.First();
 
                 var mappedEntityFromSqlQuery = objectContext.ExecuteStoreQueryAsync<MappedEntity>(
-                        SqlQueryMappingBehavior.MemberNameOnly,
+                        false,
                         "SELECT Id, RemappedColumn AS MappedColumn, UnmappedColumn FROM MappedEntities;")
                     .Result
                     .First();
@@ -203,42 +150,14 @@ namespace ProductivityApiTests
                     Assert.Single(
                         Assert.Throws<AggregateException>(() =>
                             objectContext.ExecuteStoreQueryAsync<MappedEntity>(
-                                    SqlQueryMappingBehavior.MemberNameOnly,
+                                    false,
                                     "SELECT Id, RemappedColumn, UnmappedColumn FROM MappedEntities;")
                                 .Result
                                 .First())
                         .InnerExceptions));
             }
         }
-
-        [Fact]
-        public void ObjectContext_ExecuteStoreQueryAsync_ColumnAliasFallback()
-        {
-            using (var context = new SqlQueryMappedContext())
-            {
-                var objectContext = ((IObjectContextAdapter)context).ObjectContext;
-                var mappedEntity = context.MappedEntities.First();
-                var sqls = new[] {
-                    "SELECT Id, RemappedColumn AS MappedColumn, UnmappedColumn FROM MappedEntities;",
-                    "SELECT Id, RemappedColumn, UnmappedColumn FROM MappedEntities;"
-                };
-
-                foreach (var sql in sqls)
-                {
-                    var mappedEntityFromSqlQuery = objectContext.ExecuteStoreQueryAsync<MappedEntity>(
-                            SqlQueryMappingBehavior.ColumnAliasFallback,
-                            sql)
-                        .Result
-                        .First();
-
-                    Assert.Equal(mappedEntity.Id, mappedEntityFromSqlQuery.Id);
-                    Assert.Equal(mappedEntity.MappedColumn, mappedEntityFromSqlQuery.MappedColumn);
-                    Assert.Equal(mappedEntity.UnmappedColumn, mappedEntityFromSqlQuery.UnmappedColumn);
-                }
-            }
-        }
-
-
+        
         [Fact]
         public void ObjectContext_ExecuteStoreQueryAsync_ColumnAliasOnly()
         {
@@ -248,7 +167,7 @@ namespace ProductivityApiTests
                 var mappedEntity = context.MappedEntities.First();
 
                 var mappedEntityFromSqlQuery = objectContext.ExecuteStoreQueryAsync<MappedEntity>(
-                        SqlQueryMappingBehavior.ColumnAliasOnly,
+                        true,
                         "SELECT Id, RemappedColumn, UnmappedColumn FROM MappedEntities;")
                     .Result
                     .First();
@@ -261,41 +180,14 @@ namespace ProductivityApiTests
                     Assert.Single(
                         Assert.Throws<AggregateException>(() =>
                             objectContext.ExecuteStoreQueryAsync<MappedEntity>(
-                                    SqlQueryMappingBehavior.ColumnAliasOnly,
+                                    true,
                                     "SELECT Id, RemappedColumn AS MappedColumn, UnmappedColumn FROM MappedEntities;")
                                 .Result
                                 .First())
                         .InnerExceptions));
             }
         }
-
-        [Fact]
-        public void ObjectContext_ExecuteStoreQueryAsync_MemberNameFallback()
-        {
-            using (var context = new SqlQueryMappedContext())
-            {
-                var objectContext = ((IObjectContextAdapter)context).ObjectContext;
-                var mappedEntity = context.MappedEntities.First();
-                var sqls = new[] {
-                    "SELECT Id, RemappedColumn, UnmappedColumn FROM MappedEntities;",
-                    "SELECT Id, RemappedColumn AS MappedColumn, UnmappedColumn FROM MappedEntities;"
-                };
-
-                foreach (var sql in sqls)
-                {
-                    var mappedEntityFromSqlQuery = objectContext.ExecuteStoreQueryAsync<MappedEntity>(
-                            SqlQueryMappingBehavior.MemberNameFallback,
-                            sql)
-                        .Result
-                        .First();
-
-                    Assert.Equal(mappedEntity.Id, mappedEntityFromSqlQuery.Id);
-                    Assert.Equal(mappedEntity.MappedColumn, mappedEntityFromSqlQuery.MappedColumn);
-                    Assert.Equal(mappedEntity.UnmappedColumn, mappedEntityFromSqlQuery.UnmappedColumn);
-                }
-            }
-        }
-
+        
 #endif
 
         #endregion
@@ -381,7 +273,7 @@ namespace ProductivityApiTests
                     {
                         var mappedEntityFromSqlQuery = objectContext.Translate<MappedEntity>(
                                 dbDataReader,
-                                SqlQueryMappingBehavior.MemberNameOnly)
+                                false)
                             .First();
 
                         Assert.Equal(mappedEntity.Id, mappedEntityFromSqlQuery.Id);
@@ -399,7 +291,7 @@ namespace ProductivityApiTests
                         Assert.Throws<EntityCommandExecutionException>(() =>
                             objectContext.Translate<MappedEntity>(
                                     dbDataReader,
-                                    SqlQueryMappingBehavior.MemberNameOnly)
+                                    false)
                                 .First());
                     }
                 }
@@ -408,54 +300,7 @@ namespace ProductivityApiTests
                     dbConnection.Close();
             }
         }
-
-        [Fact]
-        public void ObjectContext_Translate_ColumnAliasFallback()
-        {
-            using (var context = new SqlQueryMappedContext())
-            {
-                var objectContext = ((IObjectContextAdapter)context).ObjectContext;
-                var dbConnection = context.Database.Connection;
-                var dbConnectionOpened = false;
-                var mappedEntity = context.MappedEntities.First();
-                var sqls = new[] {
-                    "SELECT Id, RemappedColumn AS MappedColumn, UnmappedColumn FROM MappedEntities;",
-                    "SELECT Id, RemappedColumn, UnmappedColumn FROM MappedEntities;"
-                };
-
-
-                if (dbConnection.State != ConnectionState.Open)
-                {
-                    dbConnection.Open();
-                    dbConnectionOpened = true;
-                }
-
-                foreach (var sql in sqls)
-                {
-                    using (var dbCommand = dbConnection.CreateCommand())
-                    {
-                        dbCommand.CommandText = sql;
-
-                        using (var dbDataReader = dbCommand.ExecuteReader())
-                        {
-                            var mappedEntityFromSqlQuery = objectContext.Translate<MappedEntity>(
-                                    dbDataReader,
-                                    SqlQueryMappingBehavior.ColumnAliasFallback)
-                                .First();
-
-                            Assert.Equal(mappedEntity.Id, mappedEntityFromSqlQuery.Id);
-                            Assert.Equal(mappedEntity.MappedColumn, mappedEntityFromSqlQuery.MappedColumn);
-                            Assert.Equal(mappedEntity.UnmappedColumn, mappedEntityFromSqlQuery.UnmappedColumn);
-                        }
-                    }
-                }
-
-                if (dbConnectionOpened)
-                    dbConnection.Close();
-            }
-        }
-
-
+        
         [Fact]
         public void ObjectContext_Translate_ColumnAliasOnly()
         {
@@ -481,7 +326,7 @@ namespace ProductivityApiTests
                     {
                         var mappedEntityFromSqlQuery = objectContext.Translate<MappedEntity>(
                                 dbDataReader,
-                                SqlQueryMappingBehavior.ColumnAliasOnly)
+                                true)
                             .First();
 
                         Assert.Equal(mappedEntity.Id, mappedEntityFromSqlQuery.Id);
@@ -499,7 +344,7 @@ namespace ProductivityApiTests
                         Assert.Throws<EntityCommandExecutionException>(() =>
                             objectContext.Translate<MappedEntity>(
                                     dbDataReader,
-                                    SqlQueryMappingBehavior.ColumnAliasOnly)
+                                    true)
                                 .First());
                     }
                 }
@@ -508,52 +353,7 @@ namespace ProductivityApiTests
                     dbConnection.Close();
             }
         }
-
-        [Fact]
-        public void ObjectContext_Translate_MemberNameFallback()
-        {
-            using (var context = new SqlQueryMappedContext())
-            {
-                var objectContext = ((IObjectContextAdapter)context).ObjectContext;
-                var dbConnection = context.Database.Connection;
-                var dbConnectionOpened = false;
-                var mappedEntity = context.MappedEntities.First();
-                var sqls = new[] {
-                    "SELECT Id, RemappedColumn, UnmappedColumn FROM MappedEntities;",
-                    "SELECT Id, RemappedColumn AS MappedColumn, UnmappedColumn FROM MappedEntities;"
-                };
-
-
-                if (dbConnection.State != ConnectionState.Open)
-                {
-                    dbConnection.Open();
-                    dbConnectionOpened = true;
-                }
-
-                foreach (var sql in sqls)
-                {
-                    using (var dbCommand = dbConnection.CreateCommand())
-                    {
-                        dbCommand.CommandText = sql;
-
-                        using (var dbDataReader = dbCommand.ExecuteReader())
-                        {
-                            var mappedEntityFromSqlQuery = objectContext.Translate<MappedEntity>(
-                                    dbDataReader, SqlQueryMappingBehavior.MemberNameFallback)
-                                .First();
-
-                            Assert.Equal(mappedEntity.Id, mappedEntityFromSqlQuery.Id);
-                            Assert.Equal(mappedEntity.MappedColumn, mappedEntityFromSqlQuery.MappedColumn);
-                            Assert.Equal(mappedEntity.UnmappedColumn, mappedEntityFromSqlQuery.UnmappedColumn);
-                        }
-                    }
-                }
-
-                if (dbConnectionOpened)
-                    dbConnection.Close();
-            }
-        }
-
+        
         #endregion
     }
 }

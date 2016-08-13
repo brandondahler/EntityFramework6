@@ -770,7 +770,7 @@ namespace System.Data.Entity.Internal.Linq
         // Returns an <see cref="IEnumerator" /> which when enumerated will execute the given SQL query against the database
         // materializing entities into the entity set that backs this set.
         // </summary>
-        // <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        // <param name="honorColumnNameConfiguration"> Determines whether to honor the column mapping configuration for this command. </param>
         // <param name="sql"> The SQL query. </param>
         // <param name="asNoTracking">
         // If <c>true</c> then the entities are not tracked, otherwise they are.
@@ -778,7 +778,7 @@ namespace System.Data.Entity.Internal.Linq
         // <param name="streaming"> Whether the query is streaming or buffering. </param>
         // <param name="parameters"> The parameters. </param>
         // <returns> The query results. </returns>
-        public IEnumerator ExecuteSqlQuery(SqlQueryMappingBehavior sqlQueryMappingBehavior, string sql, bool asNoTracking, bool? streaming, object[] parameters)
+        public IEnumerator ExecuteSqlQuery(bool honorColumnNameConfiguration, string sql, bool asNoTracking, bool? streaming, object[] parameters)
         {
             DebugCheck.NotNull(sql);
             DebugCheck.NotNull(parameters);
@@ -789,7 +789,7 @@ namespace System.Data.Entity.Internal.Linq
             var mergeOption = asNoTracking ? MergeOption.NoTracking : MergeOption.AppendOnly;
 
             return new LazyEnumerator<TEntity>(() => InternalContext.ObjectContext.ExecuteStoreQuery<TEntity>(
-                            sqlQueryMappingBehavior, sql, EntitySetName, new ExecutionOptions(mergeOption, streaming), parameters));
+                            honorColumnNameConfiguration, sql, EntitySetName, new ExecutionOptions(mergeOption, streaming), parameters));
         }
 
 #if !NET40
@@ -798,7 +798,7 @@ namespace System.Data.Entity.Internal.Linq
         // Returns an <see cref="IDbAsyncEnumerator" /> which when enumerated will execute the given SQL query against the database
         // materializing entities into the entity set that backs this set.
         // </summary>
-        // <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        // <param name="honorColumnNameConfiguration"> Determines whether to honor the column mapping configuration for this command. </param>
         // <param name="sql"> The SQL query. </param>
         // <param name="asNoTracking">
         // If <c>true</c> then the entities are not tracked, otherwise they are.
@@ -806,7 +806,7 @@ namespace System.Data.Entity.Internal.Linq
         // <param name="streaming"> Whether the query is streaming or buffering. </param>
         // <param name="parameters"> The parameters. </param>
         // <returns> The query results. </returns>
-        public IDbAsyncEnumerator ExecuteSqlQueryAsync(SqlQueryMappingBehavior sqlQueryMappingBehavior, string sql, bool asNoTracking, bool? streaming, object[] parameters)
+        public IDbAsyncEnumerator ExecuteSqlQueryAsync(bool honorColumnNameConfiguration, string sql, bool asNoTracking, bool? streaming, object[] parameters)
         {
             DebugCheck.NotNull(sql);
             DebugCheck.NotNull(parameters);
@@ -818,7 +818,7 @@ namespace System.Data.Entity.Internal.Linq
 
             return new LazyAsyncEnumerator<TEntity>(
                 cancellationToken => InternalContext.ObjectContext.ExecuteStoreQueryAsync<TEntity>(
-                    sqlQueryMappingBehavior, sql, EntitySetName, new ExecutionOptions(mergeOption, streaming), cancellationToken, parameters));
+                    honorColumnNameConfiguration, sql, EntitySetName, new ExecutionOptions(mergeOption, streaming), cancellationToken, parameters));
         }
 
 #endif

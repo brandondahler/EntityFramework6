@@ -29,13 +29,13 @@ namespace System.Data.Entity.Internal.Linq
             var objectContextMock = Mock.Get(MockHelper.CreateMockObjectContext<string>());
             var internalSet = CreateInternalSet(objectContextMock, "foo");
 
-            var actualEnumerator = internalSet.ExecuteSqlQuery(SqlQueryMappingBehavior.MemberNameOnly, "", noTracking, streaming, new object[0]);
+            var actualEnumerator = internalSet.ExecuteSqlQuery(false, "", noTracking, streaming, new object[0]);
 
             // The query shouldn't have run yet
             objectContextMock
                 .Verify(
                     m =>
-                    m.ExecuteStoreQuery<string>(It.IsAny<SqlQueryMappingBehavior>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ExecutionOptions>(), It.IsAny<object[]>()),
+                    m.ExecuteStoreQuery<string>(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ExecutionOptions>(), It.IsAny<object[]>()),
                     Times.Never());
 
             actualEnumerator.MoveNext();
@@ -43,7 +43,7 @@ namespace System.Data.Entity.Internal.Linq
             objectContextMock
                 .Verify(
                     m => m.ExecuteStoreQuery<string>(
-                        It.IsAny<SqlQueryMappingBehavior>(), It.IsAny<string>(), It.IsAny<string>(),
+                        It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(),
                         new ExecutionOptions(noTracking ? MergeOption.NoTracking : MergeOption.AppendOnly, streaming),
                         It.IsAny<object[]>()),
                     Times.Once());
@@ -70,14 +70,14 @@ namespace System.Data.Entity.Internal.Linq
             var objectContextMock = Mock.Get(MockHelper.CreateMockObjectContext<string>());
             var internalSet = CreateInternalSet(objectContextMock, "foo");
 
-            var actualEnumerator = internalSet.ExecuteSqlQueryAsync(SqlQueryMappingBehavior.MemberNameOnly, "", noTracking, streaming, new object[0]);
+            var actualEnumerator = internalSet.ExecuteSqlQueryAsync(false, "", noTracking, streaming, new object[0]);
 
             // The query shouldn't have run yet
             objectContextMock
                 .Verify(
                     m =>
                     m.ExecuteStoreQueryAsync<string>(
-                        It.IsAny<SqlQueryMappingBehavior>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ExecutionOptions>(), It.IsAny<CancellationToken>(),
+                        It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ExecutionOptions>(), It.IsAny<CancellationToken>(),
                         It.IsAny<object[]>()),
                     Times.Never());
 
@@ -87,7 +87,7 @@ namespace System.Data.Entity.Internal.Linq
                 .Verify(
                     m =>
                     m.ExecuteStoreQueryAsync<string>(
-                        It.IsAny<SqlQueryMappingBehavior>(), It.IsAny<string>(), It.IsAny<string>(),
+                        It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(),
                         new ExecutionOptions(noTracking ? MergeOption.NoTracking : MergeOption.AppendOnly, streaming),
                         It.IsAny<CancellationToken>(), It.IsAny<object[]>()),
                     Times.Once());
@@ -170,7 +170,7 @@ namespace System.Data.Entity.Internal.Linq
             objectContextMock
                 .Setup(
                     m =>
-                    m.ExecuteStoreQuery<TEntity>(It.IsAny<SqlQueryMappingBehavior>(), It.IsAny<string>(), It.IsAny<string>(), 
+                    m.ExecuteStoreQuery<TEntity>(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), 
                     It.IsAny<ExecutionOptions>(), It.IsAny<object[]>()))
                 .Returns(objectResultMock.Object);
 
@@ -179,7 +179,7 @@ namespace System.Data.Entity.Internal.Linq
                 .Setup(
                     m =>
                     m.ExecuteStoreQueryAsync<TEntity>(
-                        It.IsAny<SqlQueryMappingBehavior>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ExecutionOptions>(), 
+                        It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ExecutionOptions>(), 
                         It.IsAny<CancellationToken>(), It.IsAny<object[]>()))
                 .Returns(Task.FromResult(objectResultMock.Object));
 #endif

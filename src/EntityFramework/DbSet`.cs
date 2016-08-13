@@ -313,7 +313,7 @@ namespace System.Data.Entity
         /// </returns>
         public virtual DbSqlQuery<TEntity> SqlQuery(string sql, params object[] parameters)
         {
-            return SqlQuery(SqlQueryMappingBehavior.MemberNameOnly, sql, parameters);
+            return SqlQuery(false, sql, parameters);
         }
 
         /// <summary>
@@ -330,7 +330,7 @@ namespace System.Data.Entity
         /// Alternatively, you can also construct a DbParameter and supply it to SqlQuery. This allows you to use named parameters in the SQL query string.
         /// context.Blogs.SqlQuery("SELECT * FROM dbo.Posts WHERE Author = @author", new SqlParameter("@author", userSuppliedAuthor));
         /// </summary>
-        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="honorColumnNameConfiguration"> Determines whether to honor the column mapping configuration for this command. </param>
         /// <param name="sql"> The SQL query string. </param>
         /// <param name="parameters"> 
         /// The parameters to apply to the SQL query string. If output parameters are used, their values will 
@@ -340,14 +340,14 @@ namespace System.Data.Entity
         /// <returns>
         /// A <see cref="DbSqlQuery{TEntity}" /> object that will execute the query when it is enumerated.
         /// </returns>
-        public virtual DbSqlQuery<TEntity> SqlQuery(SqlQueryMappingBehavior sqlQueryMappingBehavior, string sql, params object[] parameters)
+        public virtual DbSqlQuery<TEntity> SqlQuery(bool honorColumnNameConfiguration, string sql, params object[] parameters)
         {
             Check.NotEmpty(sql, "sql");
             Check.NotNull(parameters, "parameters");
 
             return new DbSqlQuery<TEntity>(
                 _internalSet != null
-                    ? new InternalSqlSetQuery(_internalSet, sqlQueryMappingBehavior, sql, /*isNoTracking:*/ false, parameters)
+                    ? new InternalSqlSetQuery(_internalSet, honorColumnNameConfiguration, sql, /*isNoTracking:*/ false, parameters)
                     : null);
         }
 

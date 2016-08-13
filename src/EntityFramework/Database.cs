@@ -503,7 +503,7 @@ namespace System.Data.Entity
         /// from the query, or can be a simple primitive type.  The type does not have to be an
         /// entity type. The results of this query are never tracked by the context even if the
         /// type of object returned is an entity type.  Use the <see cref="DbSet{TEntity}.SqlQuery(string, object[])" /> 
-        /// or <see cref="DbSet{TEntity}.SqlQuery(SqlQueryMappingBehavior, string, object[])" />
+        /// or <see cref="DbSet{TEntity}.SqlQuery(bool, string, object[])" />
         /// method to return entities that are tracked by the context.
         ///
         /// As with any API that accepts SQL it is important to parameterize any user input to protect against a SQL injection attack. You can include parameter place holders in the SQL query string and then supply parameter values as additional arguments. Any parameter values you supply will automatically be converted to a DbParameter.
@@ -523,7 +523,7 @@ namespace System.Data.Entity
         /// </returns>
         public DbRawSqlQuery<TElement> SqlQuery<TElement>(string sql, params object[] parameters)
         {
-            return SqlQuery<TElement>(SqlQueryMappingBehavior.MemberNameOnly, sql, parameters);
+            return SqlQuery<TElement>(false, sql, parameters);
         }
 
         /// <summary>
@@ -532,7 +532,7 @@ namespace System.Data.Entity
         /// from the query, or can be a simple primitive type.  The type does not have to be an
         /// entity type. The results of this query are never tracked by the context even if the
         /// type of object returned is an entity type.  Use the <see cref="DbSet{TEntity}.SqlQuery(string, object[])" /> 
-        /// or <see cref="DbSet{TEntity}.SqlQuery(SqlQueryMappingBehavior, string, object[])" />
+        /// or <see cref="DbSet{TEntity}.SqlQuery(bool, string, object[])" />
         /// method to return entities that are tracked by the context.
         ///
         /// As with any API that accepts SQL it is important to parameterize any user input to protect against a SQL injection attack. You can include parameter place holders in the SQL query string and then supply parameter values as additional arguments. Any parameter values you supply will automatically be converted to a DbParameter.
@@ -541,7 +541,7 @@ namespace System.Data.Entity
         /// context.Database.SqlQuery&lt;Post&gt;("SELECT * FROM dbo.Posts WHERE Author = @author", new SqlParameter("@author", userSuppliedAuthor));
         /// </summary>
         /// <typeparam name="TElement"> The type of object returned by the query. </typeparam>
-        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="honorColumnNameConfiguration"> Determines whether to honor the column mapping configuration for this command. </param>
         /// <param name="sql"> The SQL query string. </param>
         /// <param name="parameters"> 
         /// The parameters to apply to the SQL query string. If output parameters are used, their values will 
@@ -551,14 +551,14 @@ namespace System.Data.Entity
         /// <returns>
         /// A <see cref="DbRawSqlQuery{TElement}" /> object that will execute the query when it is enumerated.
         /// </returns>
-        public DbRawSqlQuery<TElement> SqlQuery<TElement>(SqlQueryMappingBehavior sqlQueryMappingBehavior, string sql, params object[] parameters)
+        public DbRawSqlQuery<TElement> SqlQuery<TElement>(bool honorColumnNameConfiguration, string sql, params object[] parameters)
         {
             Check.NotEmpty(sql, "sql");
             Check.NotNull(parameters, "parameters");
 
             return
                 new DbRawSqlQuery<TElement>(
-                    new InternalSqlNonSetQuery(_internalContext, typeof(TElement), sqlQueryMappingBehavior, sql, parameters));
+                    new InternalSqlNonSetQuery(_internalContext, typeof(TElement), honorColumnNameConfiguration, sql, parameters));
         }
 
         /// <summary>
@@ -567,7 +567,7 @@ namespace System.Data.Entity
         /// from the query, or can be a simple primitive type.  The type does not have to be an
         /// entity type. The results of this query are never tracked by the context even if the
         /// type of object returned is an entity type.  Use the <see cref="DbSet.SqlQuery(string, object[])" /> 
-        /// or <see cref="DbSet.SqlQuery(SqlQueryMappingBehavior, string, object[])" />
+        /// or <see cref="DbSet.SqlQuery(bool, string, object[])" />
         /// method to return entities that are tracked by the context.
         ///
         /// As with any API that accepts SQL it is important to parameterize any user input to protect against a SQL injection attack. You can include parameter place holders in the SQL query string and then supply parameter values as additional arguments. Any parameter values you supply will automatically be converted to a DbParameter.
@@ -587,7 +587,7 @@ namespace System.Data.Entity
         /// </returns>
         public DbRawSqlQuery SqlQuery(Type elementType, string sql, params object[] parameters)
         {
-            return SqlQuery(elementType, SqlQueryMappingBehavior.MemberNameOnly, sql, parameters);
+            return SqlQuery(elementType, false, sql, parameters);
         }
 
         /// <summary>
@@ -596,7 +596,7 @@ namespace System.Data.Entity
         /// from the query, or can be a simple primitive type.  The type does not have to be an
         /// entity type. The results of this query are never tracked by the context even if the
         /// type of object returned is an entity type.  Use the <see cref="DbSet.SqlQuery(string, object[])" /> 
-        /// or <see cref="DbSet.SqlQuery(SqlQueryMappingBehavior, string, object[])" />
+        /// or <see cref="DbSet.SqlQuery(bool, string, object[])" />
         /// method to return entities that are tracked by the context.
         ///
         /// As with any API that accepts SQL it is important to parameterize any user input to protect against a SQL injection attack. You can include parameter place holders in the SQL query string and then supply parameter values as additional arguments. Any parameter values you supply will automatically be converted to a DbParameter.
@@ -605,7 +605,7 @@ namespace System.Data.Entity
         /// context.Database.SqlQuery(typeof(Post), "SELECT * FROM dbo.Posts WHERE Author = @author", new SqlParameter("@author", userSuppliedAuthor));
         /// </summary>
         /// <param name="elementType"> The type of object returned by the query. </param>
-        /// <param name="sqlQueryMappingBehavior"> Controls the column mapping behavior for this command. </param>
+        /// <param name="honorColumnNameConfiguration"> Determines whether to honor the column mapping configuration for this command. </param>
         /// <param name="sql"> The SQL query string. </param>
         /// <param name="parameters"> 
         /// The parameters to apply to the SQL query string. If output parameters are used, their values 
@@ -615,13 +615,13 @@ namespace System.Data.Entity
         /// <returns>
         /// A <see cref="DbRawSqlQuery" /> object that will execute the query when it is enumerated.
         /// </returns>
-        public DbRawSqlQuery SqlQuery(Type elementType, SqlQueryMappingBehavior sqlQueryMappingBehavior, string sql, params object[] parameters)
+        public DbRawSqlQuery SqlQuery(Type elementType, bool honorColumnNameConfiguration, string sql, params object[] parameters)
         {
             Check.NotNull(elementType, "elementType");
             Check.NotEmpty(sql, "sql");
             Check.NotNull(parameters, "parameters");
 
-            return new DbRawSqlQuery(new InternalSqlNonSetQuery(_internalContext, elementType, sqlQueryMappingBehavior, sql, parameters));
+            return new DbRawSqlQuery(new InternalSqlNonSetQuery(_internalContext, elementType, honorColumnNameConfiguration, sql, parameters));
         }
 
         /// <summary>
